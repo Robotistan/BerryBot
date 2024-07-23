@@ -52,31 +52,31 @@ def tick(timer):
     time.sleep_ms(1)
     machine.Pin(rowPins[ledRow]).value(0)
     ledRow = ledRow + 1
-	
+
 setLedMatrix()
 myTimer = Timer(-1)
 myTimer.init(period=5, mode=Timer.PERIODIC, callback=tick)
 
 while True:
-	drawScreen(sunny)
+    drawScreen(sunny)
     LDR_L = ldr_left.read_u16()
     LDR_R = ldr_right.read_u16()
     #print(leftSensorValue)
     #print(rightSensorValue)
-	sleep(0.02)
-	distance = sensor.distance_cm()
-	#print(distance)
     sleep(0.02)
-	
-	if LDR_L >= LDR_THRESHOLD and LDR_R >= LDR_THRESHOLD:
-		if (LDR_R - LDR_L) >= LDR_TOLERANCE:
-			motor.right(150)
-		elif (LDR_L - LDR_R) >= LDR_TOLERANCE:
-			motor.left(150)
-		else:
-			if distance >= 15
-				motor.forward(255)
-			else
-				motor.stop()
-	else:
-		motor.stop()
+    distance = sensor.distance_cm()
+    #print(distance)
+    sleep(0.02)
+
+    if LDR_L >= LDR_THRESHOLD and LDR_R >= LDR_THRESHOLD:
+        if (LDR_R - LDR_L) >= LDR_TOLERANCE:
+            motor.right(150)
+        elif (LDR_L - LDR_R) >= LDR_TOLERANCE:
+            motor.left(150)
+        else:
+            if distance >= 15
+                motor.forward(255)
+            else
+                motor.stop()
+    else:
+        motor.stop()
