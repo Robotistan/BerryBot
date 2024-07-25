@@ -15,7 +15,7 @@ With the tracks included in the kit, you can quickly create common projects such
 
 ![](https://www.robotistan.com/Data/EditorFiles/22814-15.png)
 
-![](https://www.robotistan.com/Data/EditorFiles/22814-14.png)
+![](file:///C:/Users/Robotistan/Downloads/berrybot_arka_yuz.png)
 
 BerryBot houses more than 25 input and output sensors on its main board. Thanks to its components, BerryBot transforms into a project development robot that you can customize by developing your own code.
 
