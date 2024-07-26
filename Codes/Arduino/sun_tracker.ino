@@ -1,10 +1,9 @@
 // Libraries
 #include <Wire.h>
 #include <stdio.h>
-#include "RPi_Pico_TimerInterrupt.h"
 
 #define LDR_THRESHOLD 250
-#define LDR_TOLERANCE 75
+#define LDR_TOLERANCE 5000
 
 // Pin Defination
 #define MOTOR_B1 22
@@ -18,17 +17,11 @@
 #define TRIG_PIN 8
 #define ECHO_PIN 9
 
-// Led Matrix
-int sunny[5] =     {0x15,0x0E,0x1F,0x0E,0x15};
-
 // Variable
 long duration;
 int distance;
 float LDR_L;
 float LDR_R;
-
-int rowPins[5] = {7, 11, 12, 13, 17}; //Row LedMatrix Pins
-int colPins[5] = {18, 19, 16, 2, 3};  //Col LedMatrix Pins
 
 void attachMotor()
 {
@@ -108,40 +101,6 @@ void hcsr() {
   //Serial.println("cm");
 }
 
-volatile int ledRow = 0;
-volatile int prevLedRow = 4;
-volatile byte ledArrayBuffer[5];
-
-void drawScreen(int buffer[]){
-  for (int i = 0; i < 5; i++) {
-      ledArrayBuffer[i] = buffer[i];
-  }
-}
-
-void setColumns(byte b) {
-    digitalWrite(colPins[0], (~b >> 0) & 0x01); 
-    digitalWrite(colPins[1], (~b >> 1) & 0x01); 
-    digitalWrite(colPins[2], (~b >> 2) & 0x01); 
-    digitalWrite(colPins[3], (~b >> 3) & 0x01); 
-    digitalWrite(colPins[4], (~b >> 4) & 0x01); 
-}
-
-bool TimerHandler0(struct repeating_timer *t)
-{
-  (void) t; 
-  if (ledRow == 5)
-    ledRow = 0;
-  setColumns(ledArrayBuffer[ledRow]); 
-  digitalWrite(rowPins[ledRow], HIGH);
-  digitalWrite(rowPins[prevLedRow], LOW);
-  prevLedRow = ledRow;
-  ledRow++;
-
-  return true;
-}
-
-RPI_PICO_Timer ITimer0(0);
-
 void setup() {
   Serial.begin(115200);
   Wire.begin();
@@ -153,19 +112,11 @@ void setup() {
 
   pinMode(TRIG_PIN, OUTPUT);
   pinMode(ECHO_PIN, INPUT);
-  
-  if (ITimer0.attachInterruptInterval(3 * 1000, TimerHandler0))
-  {
-    Serial.print(F("Starting ITimer0 OK, millis() = ")); Serial.println(millis());
-  }
-  else
-    Serial.println(F("Can't set ITimer0. Select another freq. or timer"));
 }
 
 void loop(){
-   drawScreen(sunny);
-   hcsr();
-
+  hcsr();
+  delay(2);
   LDR_L = analogRead(LDR_L_PIN);
   //Serial.print("LDR_L : ");
   //Serial.println(LDR_L);
@@ -175,20 +126,27 @@ void loop(){
   //Serial.println(LDR_R);
 
   if((LDR_L >= LDR_THRESHOLD) && (LDR_R >= LDR_THRESHOLD)){
-    if((LDR_R - LDR_L) >= LDR_TOLERANCE){
+    if (distance < 10) {
+      Stop();
+      delay(2);
+      Left(150);
+      delay(500);
+      Stop();
+    }
+    else if((LDR_R - LDR_L) >= LDR_TOLERANCE){
       Right(150);
     }
     else if((LDR_L - LDR_R) >= LDR_TOLERANCE){
       Left(150);
     }
-    else {
-      if (distance >= 15)
-        Forward(255);
-      else
-        Stop();
+    else if((LDR_L >= 10000) && (LDR_R >= 10000)){
+      Forward(255);
+    }
+    else{
+      Stop();
     }
   }
   else{
-	  Stop();
+    Stop();
   }
 }
