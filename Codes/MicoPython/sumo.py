@@ -12,8 +12,6 @@ MOTOR_PWM_A_PIN = 15
 MOTOR_PWM_B_PIN = 21
 LEFT_TRACKER = 26
 RIGHT_TRACKER = 27
-rowPins= [7, 11, 12, 13, 17]
-colPins = [3, 2, 16, 19, 18]
 #############Variables####################
 MotorSpeed = 50000
 threshold = 65000
