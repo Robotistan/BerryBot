@@ -1,7 +1,6 @@
 ##########Libraries##########
 from machine import Pin, PWM, UART, Timer, ADC
 from time import sleep
-import time, utime
 from berrybot import TB6612, HCSR04
 ##########Pin Defination##########
 MOTOR_A1_PIN = 25
