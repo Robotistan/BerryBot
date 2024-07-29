@@ -1,7 +1,6 @@
 // Libraries
 #include <Wire.h>
 #include <stdio.h>
-#include "RPi_Pico_TimerInterrupt.h"
 
 // Pin Defination
 #define MOTOR_B1 22
@@ -21,18 +20,12 @@
 #define RIGHT 3
 #define LEFT  4
 
-// Led Matrix
-int tracker[5] =   {0x07,0x04,0x1F,0x04,0x07};
-
 // Variable
 int leftSensor = 0;
 int rightSensor = 0;
 uint8_t directionStt = STOP;
 uint8_t oldDirection = STOP;
 unsigned long reverseTime = 0;
-
-int rowPins[5] = {7, 11, 12, 13, 17}; //Row LedMatrix Pins
-int colPins[5] = {18, 19, 16, 2, 3};  //Col LedMatrix Pins
 
 void attachMotor()
 {
@@ -94,40 +87,6 @@ void Stop()
   analogWrite(PWM_B, 0);
 }
 
-volatile int ledRow = 0;
-volatile int prevLedRow = 4;
-volatile byte ledArrayBuffer[5];
-
-void drawScreen(int buffer[]){
-  for (int i = 0; i < 5; i++) {
-      ledArrayBuffer[i] = buffer[i];
-  }
-}
-
-void setColumns(byte b) {
-    digitalWrite(colPins[0], (~b >> 0) & 0x01); 
-    digitalWrite(colPins[1], (~b >> 1) & 0x01); 
-    digitalWrite(colPins[2], (~b >> 2) & 0x01); 
-    digitalWrite(colPins[3], (~b >> 3) & 0x01); 
-    digitalWrite(colPins[4], (~b >> 4) & 0x01); 
-}
-
-bool TimerHandler0(struct repeating_timer *t)
-{
-  (void) t; 
-  if (ledRow == 5)
-    ledRow = 0;
-  setColumns(ledArrayBuffer[ledRow]); 
-  digitalWrite(rowPins[ledRow], HIGH);
-  digitalWrite(rowPins[prevLedRow], LOW);
-  prevLedRow = ledRow;
-  ledRow++;
-
-  return true;
-}
-
-RPI_PICO_Timer ITimer0(0);
-
 void setup() {
   Serial.begin(115200);
   Wire.begin();
@@ -136,18 +95,9 @@ void setup() {
   attachMotor();
   pinMode(LEFT_SENSOR, INPUT);
   pinMode(RIGHT_SENSOR, INPUT);
-  
-  if (ITimer0.attachInterruptInterval(3 * 1000, TimerHandler0))
-  {
-    Serial.print(F("Starting ITimer0 OK, millis() = ")); Serial.println(millis());
-  }
-  else
-    Serial.println(F("Can't set ITimer0. Select another freq. or timer"));
 }
 
 void loop(){
-  drawScreen(tracker);
-
   leftSensor = analogRead(LEFT_SENSOR);
   rightSensor = analogRead(RIGHT_SENSOR);
   /*
