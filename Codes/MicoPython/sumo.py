@@ -14,7 +14,7 @@ LEFT_TRACKER = 26
 RIGHT_TRACKER = 27
 #############Variables####################
 MotorSpeed = 50000
-threshold = 65000
+threshold = 60000
 ##########Pin Initialization##########
 motor = TB6612(MOTOR_A1_PIN, MOTOR_A2_PIN, MOTOR_B1_PIN, MOTOR_B2_PIN, MOTOR_PWM_A_PIN, MOTOR_PWM_B_PIN)
 sensor = HCSR04(trigger_pin=12, echo_pin=11, echo_timeout_us=10000)
