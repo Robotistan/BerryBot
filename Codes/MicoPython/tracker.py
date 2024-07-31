@@ -52,8 +52,7 @@ while True:
     if directionStt != oldDirection:
         oldDirection = directionStt
         if directionStt == FWD:
-            motor.forward(Mid_Speed)
-            
+            motor.forward(Mid_Speed)    
         elif directionStt == RIGHT:
             motor.right(Mid_Speed)
         elif directionStt == LEFT:
