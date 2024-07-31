@@ -27,7 +27,6 @@ threshold = 60000
 directionStt = STOP
 oldDirection = STOP
 
-#############Led Matrix###################
 ##########Pin Initialization##########
 motor = TB6612(MOTOR_A1_PIN, MOTOR_A2_PIN, MOTOR_B1_PIN, MOTOR_B2_PIN, MOTOR_PWM_A_PIN, MOTOR_PWM_B_PIN)
 leftSensor = ADC(Pin(LEFT_TRACKER))
