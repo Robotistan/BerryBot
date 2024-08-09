@@ -13,9 +13,9 @@ You can also control the robot from your phone or tablet using the PicoBricks GO
 
 With the tracks included in the kit, you can quickly create common projects such as line following, sumo, light tracking, and obstacle-avoiding robots using the mobile application. Alternatively, you can learn how the algorithms for these projects are developed and write the code using the PicoBricks IDE. Additionally, you can organize fun activities with your friends by completing the tasks in the booklet or creating your own tasks based on your imagination, using the other track included in the kit.
 
-![](https://www.robotistan.com/Data/EditorFiles/22814-15.png)
+![](https://www.robotistan.com/Data/EditorFiles/22814-15-1.png)
 
-![](https://www.robotistan.com/Data/EditorFiles/22814-14.png)
+![](https://www.robotistan.com/Data/EditorFiles/22814-14-1.png)
 
 BerryBot houses more than 25 input and output sensors on its main board. Thanks to its components, BerryBot transforms into a project development robot that you can customize by developing your own code.
 
