@@ -1,7 +1,7 @@
 # BerryBot Programmable Educational Robot
 BerryBot is a robotic programming kit that aims to develop children's skills in robotics infrastructure, basic programming, hand-arm coordination, problem-solving, and more. Thanks to the motherboard on the kit, the motor connections that enable the robot to move physically can be made quickly. The robot's mechanical and electronic setup can be completed in a short time due to its easily assembled wooden body.
 
-![](https://www.robotistan.com/Data/EditorFiles/pico1.png)
+![](https://www.robotistan.com/Data/EditorFiles/picoo1.png)
 
 After completing the setup, you can improve your programming skills by programming BerryBot using the PicoBricks IDE, either block-based or text-based.
 
