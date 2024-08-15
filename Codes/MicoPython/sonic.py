@@ -25,14 +25,14 @@ while (push_button.value()==0):
 while True:
     print(sensor.distance_cm())
    
-    if (sensor.distance_cm()) > (10):
-        motor.forward(80 * 630,80 * 650)
+    if (sensor.distance_cm()) > (12):
+        motor.forward(100 * 650)
     else:
         motor.stop()
         time.sleep((0.5))
-        motor.backward(80 * 630,80 * 650)
+        motor.backward(100 * 650)
         time.sleep((0.1))
-        motor.left(70 * 630,70 * 650)
+        motor.left(80 * 650)
         if left_counter==0:
             time.sleep((0.6))
             left_counter=left_counter+1
@@ -42,3 +42,4 @@ while True:
         motor.stop()
         time.sleep((0.5))
      
+
