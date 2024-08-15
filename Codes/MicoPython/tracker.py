@@ -12,10 +12,11 @@ MOTOR_PWM_A_PIN = 15
 MOTOR_PWM_B_PIN = 21
 LEFT_TRACKER = 26
 RIGHT_TRACKER = 27
+MODE_BUTTON = 10
 
 #############Variables####################
-Mid_Speed = 50000
-Low_Speed = 47000
+Mid_Speed = 58000
+Low_Speed = 43000
 
 STOP = 0
 FWD = 1
@@ -31,14 +32,18 @@ oldDirection = STOP
 motor = TB6612(MOTOR_A1_PIN, MOTOR_A2_PIN, MOTOR_B1_PIN, MOTOR_B2_PIN, MOTOR_PWM_A_PIN, MOTOR_PWM_B_PIN)
 leftSensor = ADC(Pin(LEFT_TRACKER))
 rightSensor = ADC(Pin(RIGHT_TRACKER))
+push_button = Pin(MODE_BUTTON,Pin.IN,Pin.PULL_DOWN)
 
+while (push_button.value()==0):
+    motor.stop()
+    
 while True:
     
     leftSensorValue = leftSensor.read_u16()
     rightSensorValue = rightSensor.read_u16()
     #print(leftSensorValue)
     #print(rightSensorValue)
-    sleep(0.02)
+    #sleep(0.01)
 
     if leftSensorValue >= threshold and rightSensorValue >= threshold:
         directionStt = FWD
@@ -58,10 +63,10 @@ while True:
         elif directionStt == LEFT:
             motor.left(Mid_Speed)
         elif directionStt == BWD:
-            motor.backward(Low_Speed)
+            #motor.backward(Low_Speed)
             reversTime = utime.ticks_ms()   
-        elif directionStt == STOP:
-            motor.stop()
+        #elif directionStt == STOP:
+            #motor.stop()
             
         #print(directionStt)
         #print(oldDirection)
