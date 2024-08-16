@@ -32,9 +32,11 @@ while True:
         time.sleep((0.5))
         motor.backward(100 * 650)
         time.sleep((0.1))
+        motor.stop()
+        time.sleep((0.2))
         motor.left(80 * 650)
         if left_counter==0:
-            time.sleep((0.6))
+            time.sleep((0.5))
             left_counter=left_counter+1
         else:
             time.sleep((1))
