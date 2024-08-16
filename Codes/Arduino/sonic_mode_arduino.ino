@@ -1,7 +1,6 @@
 #include <Wire.h>
 #include <stdio.h>
 
-
 // Pin Defination
 #define TX_PIN 0
 #define RX_PIN 1
@@ -25,8 +24,7 @@
 // Variable
 long duration;
 int distance;
-
-
+int left_counter=0;
 
 void attachMotor()
 {
@@ -60,20 +58,20 @@ void Backward(int speed)
 
 void Left(int speed)
 {
-	digitalWrite(INPUT_A1, HIGH);
-	digitalWrite(INPUT_A2, LOW);
-	digitalWrite(INPUT_B1, LOW);
-  digitalWrite(INPUT_B2, HIGH);
+	digitalWrite(INPUT_A1, LOW);
+	digitalWrite(INPUT_A2, HIGH);
+  digitalWrite(INPUT_B1, HIGH);
+	digitalWrite(INPUT_B2, LOW);
   analogWrite(PWM_A, speed);
   analogWrite(PWM_B, speed);
 }
 
 void Right(int speed)
 {
-  digitalWrite(INPUT_A1, LOW);
-	digitalWrite(INPUT_A2, HIGH);
-  digitalWrite(INPUT_B1, HIGH);
-	digitalWrite(INPUT_B2, LOW);
+  digitalWrite(INPUT_A1, HIGH);
+	digitalWrite(INPUT_A2, LOW);
+	digitalWrite(INPUT_B1, LOW);
+  digitalWrite(INPUT_B2, HIGH);
   analogWrite(PWM_A, speed);
   analogWrite(PWM_B, speed);
 }
@@ -124,23 +122,36 @@ void setup() {
   pinMode(RIGHT_SENSOR, INPUT);
   pinMode(MODE_BUTTON, OUTPUT);
 
-  
+  while (digitalRead(MODE_BUTTON)==0){
+    Stop();
+  }
+
 }
+
 void loop(){
+  
   hcsr();
   int cm=distance;
-  if(cm>30){
+  if(cm>12){
     Forward(255);
   }
   else{
     Stop();
-    delay(1000);
-    Backward(200);
     delay(500);
+    Backward(200);
+    delay(100);
     Stop();
     delay(200);
     Left(200);
-    delay(300);
+    if(left_counter==0){
+      delay(500);
+      left_counter++;
+    }
+    else{
+      delay(800);
+      left_counter=0;
+    }
+    
     Stop();
     delay(200);
   }
