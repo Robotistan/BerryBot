@@ -11,6 +11,7 @@ MOTOR_PWM_A_PIN = 15
 MOTOR_PWM_B_PIN = 21
 LEFT_TRACKER = 26
 RIGHT_TRACKER = 27
+MODE_BUTTON = 10
 #############Variables####################
 MotorSpeed = 50000
 threshold = 60000
@@ -20,7 +21,11 @@ motor = TB6612(MOTOR_A1_PIN, MOTOR_A2_PIN, MOTOR_B1_PIN, MOTOR_B2_PIN, MOTOR_PWM
 sensor = HCSR04(trigger_pin=8, echo_pin=9, echo_timeout_us=10000)
 leftSensor = ADC(Pin(LEFT_TRACKER))
 rightSensor = ADC(Pin(RIGHT_TRACKER))
+push_button = Pin(MODE_BUTTON,Pin.IN,Pin.PULL_DOWN)
 
+while (push_button.value()==0):
+    motor.stop()
+    
 while True:
     distance = sensor.distance_cm()
     #print(distance)
@@ -55,3 +60,4 @@ while True:
                 motor.stop()
         else:
             motor.stop()
+
