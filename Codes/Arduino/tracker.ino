@@ -11,8 +11,9 @@
 #define PWM_B 21
 #define LEFT_SENSOR 26
 #define RIGHT_SENSOR 27
+#define MODE_BUTTON 10
 
-#define TRACKER_THRESHOLD 1200
+#define TRACKER_THRESHOLD 900
 
 #define STOP  0
 #define FWD   1
@@ -95,11 +96,19 @@ void setup() {
   attachMotor();
   pinMode(LEFT_SENSOR, INPUT);
   pinMode(RIGHT_SENSOR, INPUT);
+  pinMode(MODE_BUTTON, OUTPUT);
+
+  while (digitalRead(MODE_BUTTON)==0){
+    Stop();
+    Serial.println(digitalRead(MODE_BUTTON));
+  }
+
 }
 
 void loop(){
   leftSensor = analogRead(LEFT_SENSOR);
   rightSensor = analogRead(RIGHT_SENSOR);
+  
   /*
   Serial.print("left:");
   Serial.println(leftSensor);
@@ -109,32 +118,39 @@ void loop(){
 
   if (leftSensor >= TRACKER_THRESHOLD && rightSensor >= TRACKER_THRESHOLD) {
     directionStt = FWD;
+    //Serial.println("FWD");
   } 
   else if (leftSensor < TRACKER_THRESHOLD && rightSensor > TRACKER_THRESHOLD) {
     directionStt = RIGHT;
+    //Serial.println("RIGHT");
   } 
   else if (leftSensor > TRACKER_THRESHOLD && rightSensor < TRACKER_THRESHOLD) {
     directionStt = LEFT;
+    //Serial.println("LEFT");
   } 
   else if (leftSensor < TRACKER_THRESHOLD && rightSensor < TRACKER_THRESHOLD && directionStt != STOP) {
     directionStt = BWD;
+    //Serial.println("BWD");
   }
 
   if (directionStt != oldDirection) {
     oldDirection = directionStt;
     if (directionStt == FWD)
-      Forward(140);
+      Forward(220);
     else if (directionStt == RIGHT)
-      Right(140);
+      Right(220);
     else if (directionStt == LEFT)
-      Left(140);
+      Left(220);
     else if (directionStt == BWD) {
-      Backward(140);
+      //Backward(140);
       reverseTime = millis();
-    } else if (directionStt == STOP)
+    }
+    /*else if (directionStt == STOP)
       Stop();
+    */
   }
 
   if (directionStt == BWD && millis() - reverseTime > 300)
     directionStt = STOP;
+
 }
