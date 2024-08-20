@@ -13,8 +13,9 @@
 #define RIGHT_SENSOR 27
 #define TRIG_PIN 8
 #define ECHO_PIN 9
+#define MODE_BUTTON 10
 
-#define TRACKER_THRESHOLD 1200
+#define TRACKER_THRESHOLD 1000
 #define HighSpeed 255
 
 // Variable
@@ -114,12 +115,21 @@ void setup() {
 
   pinMode(TRIG_PIN, OUTPUT);
   pinMode(ECHO_PIN, INPUT);
+  pinMode(MODE_BUTTON, OUTPUT);
+
+  while (digitalRead(MODE_BUTTON)==0){
+    Stop();
+    Serial.println(digitalRead(MODE_BUTTON));
+  }
+
 }
 
 void loop(){
   hcsr();
   leftSensor = analogRead(LEFT_SENSOR);
   rightSensor = analogRead(RIGHT_SENSOR);
+  
+
   /*
   Serial.print("left:");
   Serial.println(leftSensor);
@@ -130,11 +140,11 @@ void loop(){
   if (distance <= 15) {
     if ((leftSensor >= TRACKER_THRESHOLD) || (rightSensor >= TRACKER_THRESHOLD)){
       Backward(HighSpeed);
-      delay(500);
+      delay(100);
     }
     else if ((leftSensor < TRACKER_THRESHOLD) && (rightSensor < TRACKER_THRESHOLD)){
       Forward(HighSpeed);
-      delay(500);
+      delay(100);
     }
     else
       Stop();
