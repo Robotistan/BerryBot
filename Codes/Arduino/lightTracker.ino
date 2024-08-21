@@ -2,8 +2,8 @@
 #include <Wire.h>
 #include <stdio.h>
 
-#define LDR_THRESHOLD 250
-#define LDR_TOLERANCE 5000
+#define LDR_THRESHOLD 160
+#define LDR_TOLERANCE 190
 
 // Pin Defination
 #define MOTOR_B1 22
@@ -16,6 +16,7 @@
 #define LDR_L_PIN 29
 #define TRIG_PIN 8
 #define ECHO_PIN 9
+#define MODE_BUTTON 10
 
 // Variable
 long duration;
@@ -55,20 +56,20 @@ void Backward(int speed)
 
 void Left(int speed)
 {
-  digitalWrite(MOTOR_A1, HIGH);
-  digitalWrite(MOTOR_A2, LOW);
-  digitalWrite(MOTOR_B1, LOW);
-  digitalWrite(MOTOR_B2, HIGH);
+  digitalWrite(MOTOR_A1, LOW);
+  digitalWrite(MOTOR_A2, HIGH);
+  digitalWrite(MOTOR_B1, HIGH);
+  digitalWrite(MOTOR_B2, LOW);
   analogWrite(PWM_A, speed);
   analogWrite(PWM_B, speed);
 }
 
 void Right(int speed)
 {
-  digitalWrite(MOTOR_A1, LOW);
-  digitalWrite(MOTOR_A2, HIGH);
-  digitalWrite(MOTOR_B1, HIGH);
-  digitalWrite(MOTOR_B2, LOW);
+  digitalWrite(MOTOR_A1, HIGH);
+  digitalWrite(MOTOR_A2, LOW);
+  digitalWrite(MOTOR_B1, LOW);
+  digitalWrite(MOTOR_B2, HIGH);
   analogWrite(PWM_A, speed);
   analogWrite(PWM_B, speed);
 }
@@ -112,6 +113,12 @@ void setup() {
 
   pinMode(TRIG_PIN, OUTPUT);
   pinMode(ECHO_PIN, INPUT);
+  pinMode(MODE_BUTTON, OUTPUT);
+
+  while (digitalRead(MODE_BUTTON)==0){
+    Stop();
+  }
+
 }
 
 void loop(){
@@ -124,6 +131,7 @@ void loop(){
   LDR_R = analogRead(LDR_R_PIN);
   //Serial.print("LDR_R : ");
   //Serial.println(LDR_R);
+  
 
   if((LDR_L >= LDR_THRESHOLD) && (LDR_R >= LDR_THRESHOLD)){
     if (distance < 10) {
@@ -139,7 +147,7 @@ void loop(){
     else if((LDR_L - LDR_R) >= LDR_TOLERANCE){
       Left(150);
     }
-    else if((LDR_L >= 10000) && (LDR_R >= 10000)){
+    else if((LDR_L >= 110) && (LDR_R >= 110)){
       Forward(255);
     }
     else{
@@ -149,4 +157,5 @@ void loop(){
   else{
     Stop();
   }
+
 }
