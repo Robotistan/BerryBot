@@ -8,4 +8,4 @@ BerryBot’s BOOTSEL mode lives in read-only memory inside the RP2040 chip, and 
 - Open Explorer, and open the BerryBot directory like you would any other hard drive
 - Drag and drop the UF2 file into the BerryBot directory
 
-- ![](https://www.robotistan.com/Data/EditorFiles/22814-15-1.png)
+ ![](https://www.robotistan.com/Data/EditorFiles/22814-15-1.png)
