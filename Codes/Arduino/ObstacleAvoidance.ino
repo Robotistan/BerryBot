@@ -38,30 +38,30 @@ void attachMotor()
 
 void Forward(int speed)
 {
-	digitalWrite(INPUT_A1, HIGH);
-	digitalWrite(INPUT_A2, LOW);
+  digitalWrite(INPUT_A1, HIGH);
+  digitalWrite(INPUT_A2, LOW);
   digitalWrite(INPUT_B1, HIGH);
-	digitalWrite(INPUT_B2, LOW);
+  digitalWrite(INPUT_B2, LOW);
   analogWrite(PWM_A, speed);
   analogWrite(PWM_B, speed);
 }
 
 void Backward(int speed)
 {
-	digitalWrite(INPUT_A1, LOW);
-	digitalWrite(INPUT_A2, HIGH);
+  digitalWrite(INPUT_A1, LOW);
+  digitalWrite(INPUT_A2, HIGH);
   digitalWrite(INPUT_B1, LOW);
-	digitalWrite(INPUT_B2, HIGH);
+  digitalWrite(INPUT_B2, HIGH);
   analogWrite(PWM_A, speed);
   analogWrite(PWM_B, speed);
 }
 
 void Left(int speed)
 {
-	digitalWrite(INPUT_A1, LOW);
-	digitalWrite(INPUT_A2, HIGH);
+  digitalWrite(INPUT_A1, LOW);
+  digitalWrite(INPUT_A2, HIGH);
   digitalWrite(INPUT_B1, HIGH);
-	digitalWrite(INPUT_B2, LOW);
+  digitalWrite(INPUT_B2, LOW);
   analogWrite(PWM_A, speed);
   analogWrite(PWM_B, speed);
 }
@@ -69,8 +69,8 @@ void Left(int speed)
 void Right(int speed)
 {
   digitalWrite(INPUT_A1, HIGH);
-	digitalWrite(INPUT_A2, LOW);
-	digitalWrite(INPUT_B1, LOW);
+  digitalWrite(INPUT_A2, LOW);
+  digitalWrite(INPUT_B1, LOW);
   digitalWrite(INPUT_B2, HIGH);
   analogWrite(PWM_A, speed);
   analogWrite(PWM_B, speed);
@@ -78,10 +78,10 @@ void Right(int speed)
 
 void Stop()
 {
-	digitalWrite(INPUT_A1, LOW);
-	digitalWrite(INPUT_A2, LOW);
+  digitalWrite(INPUT_A1, LOW);
+  digitalWrite(INPUT_A2, LOW);
   digitalWrite(INPUT_B1, LOW);
-	digitalWrite(INPUT_B2, LOW);
+  digitalWrite(INPUT_B2, LOW);
   analogWrite(PWM_A, 0);
   analogWrite(PWM_B, 0);
 }
