@@ -46,7 +46,7 @@
 #define PIXEL_INTERVAL 100
 #define LDR_THRESHOLD 250
 #define LDR_TOLERANCE 75
-#define TRACKER_THRESHOLD 1200
+#define TRACKER_THRESHOLD 500
 
 #define STOP  0
 #define FWD   1
@@ -63,7 +63,7 @@
 int rowPins[5] = {7, 11, 12, 13, 17}; //Row LedMatrix Pins
 int colPins[5] = {18, 19, 16, 2, 3};  //Col LedMatrix Pins
 
-// Variable
+// Variables
 long duration;
 int distance;
 int ble_data;
@@ -97,6 +97,13 @@ uint8_t oldDirection = STOP;
 int buttonState = 0;
 int lastButtonState = 0;
 int user_speed = 0;
+int avg = 0;
+int left_counter=0;
+int counter = 0;
+int bluetooth_mode = 0;
+int direction = 0;
+int right_speed = 0;
+int left_speed = 0;
 
 // Led Matrix
 int smile[5] =     {0x0A,0x0A,0x00,0x11,0x0E};
@@ -115,6 +122,7 @@ int bluetooth[5] = {0x1F,0x00,0x0E,0x00,0x04};
 int ir[5] =        {0x1F,0x11,0x1F,0x11,0x1F};
 int sunny[5] =     {0x15,0x0E,0x1F,0x0E,0x15};
 int sonic[5] =     {0x04,0x0E,0x1B,0x0E,0x04};
+int triangle[5] =  {0x1F,0x11,0x11,0x0A,0x04};
 int user_led_matrix[5];
 
 // Function Declaration
@@ -130,54 +138,92 @@ void attachMotor()
   pinMode(PWM_B, OUTPUT);
 }
 
-void Forward(int speed)
-{
-	digitalWrite(INPUT_A1, HIGH);
-	digitalWrite(INPUT_A2, LOW);
-  digitalWrite(INPUT_B1, HIGH);
-	digitalWrite(INPUT_B2, LOW);
-  analogWrite(PWM_A, speed);
-  analogWrite(PWM_B, speed);
+void setMotorSpeed(int leftSpeed, int rightSpeed) {
+  if (rightSpeed > 0) {
+    digitalWrite(INPUT_A1, LOW);
+    digitalWrite(INPUT_A2, HIGH);
+    if (rightSpeed < 100)
+      rightSpeed = 100;
+    analogWrite(PWM_A, rightSpeed);
+  } 
+  else {
+    digitalWrite(INPUT_A1, HIGH);
+    digitalWrite(INPUT_A2, LOW);
+    if (-rightSpeed < 100)
+      rightSpeed = -100;
+    analogWrite(PWM_A, -rightSpeed);
+  }
+
+  if (leftSpeed > 0) {
+    digitalWrite(INPUT_B1, LOW);
+    digitalWrite(INPUT_B2, HIGH);
+    if (leftSpeed < 100)
+      leftSpeed = 100;
+    analogWrite(PWM_B, leftSpeed);
+  } 
+  else {
+    digitalWrite(INPUT_B1, HIGH);
+    digitalWrite(INPUT_B2, LOW);
+    if (-leftSpeed < 100)
+      leftSpeed = -100;
+    analogWrite(PWM_B, -leftSpeed);
+  }
 }
 
-void Backward(int speed)
-{
-	digitalWrite(INPUT_A1, LOW);
-	digitalWrite(INPUT_A2, HIGH);
-  digitalWrite(INPUT_B1, LOW);
-	digitalWrite(INPUT_B2, HIGH);
-  analogWrite(PWM_A, speed);
-  analogWrite(PWM_B, speed);
+void Move (int direction, int speed){
+  if (direction == FWD){
+    analogWrite(PWM_A, speed);
+    analogWrite(PWM_B, speed);
+
+    digitalWrite(INPUT_A1, HIGH);
+    digitalWrite(INPUT_A2, LOW);
+    digitalWrite(INPUT_B1, HIGH);
+    digitalWrite(INPUT_B2, LOW);
+  }
+  else if (direction == BWD){
+    analogWrite(PWM_A, speed);
+    analogWrite(PWM_B, speed);
+
+    digitalWrite(INPUT_A1, LOW);
+    digitalWrite(INPUT_A2, HIGH);
+    digitalWrite(INPUT_B1, LOW);
+    digitalWrite(INPUT_B2, HIGH);
+  }
+  else if (direction == RIGHT){
+    analogWrite(PWM_A, speed);
+    analogWrite(PWM_B, speed);
+
+    digitalWrite(INPUT_A1, HIGH);
+    digitalWrite(INPUT_A2, LOW);
+    digitalWrite(INPUT_B1, LOW);
+    digitalWrite(INPUT_B2, HIGH);
+  }
+  else if (direction == LEFT){
+    analogWrite(PWM_A, speed);
+    analogWrite(PWM_B, speed);
+    digitalWrite(INPUT_A1, LOW);
+    digitalWrite(INPUT_A2, HIGH);
+    digitalWrite(INPUT_B1, HIGH);
+    digitalWrite(INPUT_B2, LOW);
+  }
+  else if (direction == STOP){
+    analogWrite(PWM_A, 0);
+    analogWrite(PWM_B, 0);
+
+    digitalWrite(INPUT_A1, LOW);
+    digitalWrite(INPUT_A2, LOW);
+    digitalWrite(INPUT_B1, LOW);
+    digitalWrite(INPUT_B2, LOW);
+  }
 }
 
-void Left(int speed)
-{
-	digitalWrite(INPUT_A1, HIGH);
-	digitalWrite(INPUT_A2, LOW);
-	digitalWrite(INPUT_B1, LOW);
-  digitalWrite(INPUT_B2, HIGH);
-  analogWrite(PWM_A, speed);
-  analogWrite(PWM_B, speed);
-}
-
-void Right(int speed)
-{
-  digitalWrite(INPUT_A1, LOW);
-	digitalWrite(INPUT_A2, HIGH);
-  digitalWrite(INPUT_B1, HIGH);
-	digitalWrite(INPUT_B2, LOW);
-  analogWrite(PWM_A, speed);
-  analogWrite(PWM_B, speed);
-}
-
-void Stop()
-{
-	digitalWrite(INPUT_A1, LOW);
-	digitalWrite(INPUT_A2, LOW);
-  digitalWrite(INPUT_B1, LOW);
-	digitalWrite(INPUT_B2, LOW);
-  analogWrite(PWM_A, 0);
-  analogWrite(PWM_B, 0);
+void berry_horn() {
+  for(int i=0; i<50; i++){
+    digitalWrite(BUZZER_PIN, HIGH);
+    delay(2);
+    digitalWrite(BUZZER_PIN, LOW);
+    delay(2);
+  }
 }
 
 void BLEReadResponse() {
@@ -227,7 +273,7 @@ volatile int prevLedRow = 4;
 volatile byte ledArrayBuffer[5];
 
 void drawScreen(int buffer[]){
-  for (i = 0; i < 5; i++) {
+  for (i = 0; i<5; i++) {
       ledArrayBuffer[i] = buffer[i];
   }
 }
@@ -252,13 +298,6 @@ bool TimerHandler0(struct repeating_timer *t)
   ledRow++;
 
   return true;
-}
-
-void fullPixel(){
-  for(int i=0;i<6;i++){
-    strip.setPixelColor(i, 0, 0, 127);
-  }
-  strip.show();
 }
 
 void pixelFunction() {
@@ -303,7 +342,8 @@ void rgbFunction(){
   }
 }
 
-void hcsr() {
+long hcsr() {
+  long distance;
   digitalWrite(TRIG_PIN, LOW);
   delayMicroseconds(5);
 
@@ -317,8 +357,7 @@ void hcsr() {
 
   distance = (duration / 2) / 29.1;
 
-  //Serial.print(cm);
-  //Serial.println("cm");
+  return distance;
 }
 
 void bleConnect (){
@@ -337,14 +376,20 @@ void bleConnect (){
       }
     }
   }
+  else{
+    Serial1.write("AT+SYSGPIOWRITE=0,0");
+    Serial1.write("\r\n");
+    ledWasOn = 1;
+  }
 }
 
 void buttonInterruptHandler() {
   buttonState = digitalRead(MODE_BUTTON);
   if ((buttonState == HIGH) && (lastButtonState == 0)) {
     lastButtonState = 1;
-    if (BerryMode >= 6){
-      BerryMode = 1;
+    Move(STOP,0);
+    if (BerryMode >= 7){
+      BerryMode = 0;
     }
     else{
       BerryMode++;
@@ -358,6 +403,134 @@ void buttonInterruptHandler() {
 }
 
 RPI_PICO_Timer ITimer0(0);
+
+void light_tracker(){
+  delay(10);
+  LDR_L = analogRead(LDR_L_PIN);
+  //Serial.print("LDR_L : ");
+  //Serial.println(LDR_L);
+
+  LDR_R = analogRead(LDR_R_PIN);
+  //Serial.print("LDR_R : ");
+  //Serial.println(LDR_R);
+
+  if((LDR_R - LDR_L) >= LDR_TOLERANCE){
+    Move(RIGHT, 150);
+  }
+  else if((LDR_L - LDR_R) >= LDR_TOLERANCE){
+    Move(LEFT, 150);
+  }
+  else if((LDR_L >= LDR_THRESHOLD) && (LDR_R >= LDR_THRESHOLD)){
+    Move(FWD, 255);
+  }
+  else{
+    Move(STOP,0);
+  }
+}
+
+void line_tracker(){
+  leftSensor = analogRead(LEFT_SENSOR);
+  rightSensor = analogRead(RIGHT_SENSOR);
+  
+  /*
+  Serial.print("left:");
+  Serial.println(leftSensor);
+  Serial.print("  right:");
+  Serial.println(rightSensor);
+  */
+
+  if (leftSensor >= TRACKER_THRESHOLD && rightSensor >= TRACKER_THRESHOLD) {
+    directionStt = FWD;
+  } 
+  else if (leftSensor < TRACKER_THRESHOLD && rightSensor > TRACKER_THRESHOLD) {
+    directionStt = LEFT;
+  } 
+  else if (leftSensor > TRACKER_THRESHOLD && rightSensor < TRACKER_THRESHOLD) {
+    directionStt = RIGHT;
+  } 
+  else if (leftSensor < TRACKER_THRESHOLD && rightSensor < TRACKER_THRESHOLD && directionStt != STOP) {
+    directionStt = BWD;
+  }
+
+  if (directionStt != oldDirection) {
+    oldDirection = directionStt;
+    if (directionStt == FWD)
+      Move(FWD, 220);
+    else if (directionStt == RIGHT)
+      Move(RIGHT, 220);
+    else if (directionStt == LEFT)
+      Move(LEFT, 220);
+    else if (directionStt == BWD) {
+      reverseTime = millis();
+    }
+  }
+}
+
+void sonic_mode(){
+  long distance = hcsr();
+
+  if(distance > 12){
+    Move(FWD, 255);
+  }
+  else{
+    Move(STOP,0);
+    delay(500);
+    Move(BWD, 200);
+    delay(100);
+    Move(STOP, 0);
+    delay(200);
+    Move(LEFT, 200);
+    if(left_counter==0){
+      delay(500);
+      left_counter++;
+    }
+    else{
+      delay(800);
+      left_counter=0;
+    }
+    Move(STOP,0);
+    delay(200);
+  }
+}
+
+void sumo(){
+  long distance = hcsr();
+  leftSensor = analogRead(LEFT_SENSOR);
+  rightSensor = analogRead(RIGHT_SENSOR);
+
+  if (distance <= 22) {
+    if ((leftSensor >= TRACKER_THRESHOLD) || (rightSensor >= TRACKER_THRESHOLD)){
+      Move(BWD,255);
+      delay(500);
+    }
+    else if ((leftSensor < TRACKER_THRESHOLD) && (rightSensor < TRACKER_THRESHOLD)){
+      Move(FWD,255);
+      delay(100);
+    }
+    else
+      Move(STOP,0);
+  }
+  else{
+    if ((leftSensor >= TRACKER_THRESHOLD) || (rightSensor >= TRACKER_THRESHOLD)){
+        Move(BWD,255);
+        delay(200);
+    }
+    else if ((leftSensor < TRACKER_THRESHOLD) && (rightSensor < TRACKER_THRESHOLD)){
+        counter += 1;
+        if (counter == 3){
+          Move(FWD,180);
+          delay(100);
+          counter = 0;
+        }
+        else{
+          Move(LEFT,180);
+          delay(100);
+          Move(STOP,0);
+        }
+    }else
+      Move(STOP,0);
+  }
+}
 
 void setup() {
   Serial.begin(115200);
@@ -394,8 +567,10 @@ void setup() {
 void loop() {
   switch(BerryMode){
     case 0: //Choose Mode
+      drawScreen(smile);
       rgbFunction();
       bleConnect();
+      Move(STOP,0);
       break;
     case 1: //Bluetooth Settings
       drawScreen(bluetooth);
@@ -422,9 +597,7 @@ void loop() {
       }
 
       ble_data = Serial1.read();
-      //Serial.println(ble_data);
-      //delay(1500);
-      delay(100);
+      
       if(ble_data == -1){
         ble_data = 0;
         ble_cnt = 0;
@@ -446,28 +619,22 @@ void loop() {
         ble_cnt++;
         ble_data = 0;
       }
-      
-      //while(!(Serial1.available()));
+
       if (ble_data == '+') {
         String bleStr = Serial1.readStringUntil(0x0A);
         if (bleStr.indexOf("BLE_DISCONNECT") > -1) {
           ble_data = 0;
-            bleConnected = false;
-          }
+          bleConnected = false;
+        }
         else{
           bleConnected = true;
         }
       }
 
       bleConnect();
-      delay(50);
-/*
-        Serial.println("------");
-        Serial.println(ble_buf[2]);
-        Serial.println(ble_buf[3]);
-        Serial.println("------");
-*/
+
       if((ble_buf[0] == 82) && (ble_buf[1] == 2) && (ble_buf[2] == 1) && (ble_buf[3] == 0)){ //Neo turn on/off
+        bluetooth_mode = 0;
         if(rgb_status == 1){
           rgb_status = 0;
           for(i=0; i<6; i++){
@@ -482,64 +649,58 @@ void loop() {
         }
       }
       else if ((ble_buf[0] == 82) && (ble_buf[1] == 2) && (ble_buf[2] == 2) && (ble_buf[3] == 0)){ //Horn
-        //Serial.println("horn");
-        tone(BUZZER_PIN, 500);
-        delay(1000);
-        noTone(BUZZER_PIN);
-        delay(1000);
+        bluetooth_mode = 0;
+        berry_horn();
       }
-      else if ((ble_buf[0] == 82) && (ble_buf[1] == 2) && (ble_buf[2] == 4) && (ble_buf[3] == 0)){ //Sonic
-        //Serial.println("Sonic");
+      else if (((ble_buf[0] == 82) && (ble_buf[1] == 2) && (ble_buf[2] == 4) && (ble_buf[3] == 0)) || (bluetooth_mode == 1)){ //Sonic
+        bluetooth_mode = 1;
+        sonic_mode();
       }
-      else if ((ble_buf[0] == 82) && (ble_buf[1] == 2) && (ble_buf[2] == 8) && (ble_buf[3] == 0)){ //Tracker
-        //Serial.println("Tracker");
+      else if (((ble_buf[0] == 82) && (ble_buf[1] == 2) && (ble_buf[2] == 8) && (ble_buf[3] == 0)) || (bluetooth_mode == 2)){ //Line Tracker
+        bluetooth_mode = 2;
+        line_tracker();
       }
-      else if ((ble_buf[0] == 82) && (ble_buf[1] == 2) && (ble_buf[2] == 16) && (ble_buf[3] == 0)){ //Light Sensor
-        //Serial.println("Light Sensor");
+      else if (((ble_buf[0] == 82) && (ble_buf[1] == 2) && (ble_buf[2] == 16) && (ble_buf[3] == 0)) || (bluetooth_mode == 3)){ //Light Tracker
+        bluetooth_mode = 3;
+        light_tracker();
+      }
+      else if (((ble_buf[0] == 82) && (ble_buf[1] == 2) && (ble_buf[2] == 32) && (ble_buf[3] == 0)) || (bluetooth_mode == 4)){ //Sumo
+        bluetooth_mode = 4;
+        sumo();
       }
       else if ((ble_buf[0] == 82) && (ble_buf[1] == 3) && (ble_buf[2] != 255) && (ble_buf[3] != 255)){ //Move
+        bluetooth_mode = 0;
         led_matrix_status = 2;
-        
-        if((ble_buf[3] >= 1) && (ble_buf[3] <= 90)){ //Forward
-          drawScreen(forward);
-          user_speed = constrain(ble_buf[3],100,254);
-          Forward(user_speed);
-          //Forward(255);
-          delay(500);
-        }
-        else if((ble_buf[3] >= 160) && (ble_buf[3] <= 254)){ //Backward
-          drawScreen(backward);
-          user_speed = constrain(ble_buf[3],100,254);
-          Backward(user_speed);
-          //Backward(255);
-          delay(500);
-        }
-        else if((ble_buf[2] >= 1) && (ble_buf[2] <= 90)){ //Left
-          drawScreen(left);
-          user_speed = constrain(ble_buf[2],100,254);
-          Left(user_speed);
-          //Left(255);
-          delay(130);
-        }
-        else if((ble_buf[2] >= 160) && (ble_buf[2] <= 254)){ //Right
-          drawScreen(right);
-          user_speed = constrain(ble_buf[2],100,254);
-          Right(user_speed);
-          //Right(255);
-          delay(130);
-        }
-        else{ //Stop
+
+        if((ble_buf[2] == 0) && (ble_buf[3] == 0)){
           led_matrix_status = 0;
-          Stop();
+          Move(STOP,0);
           drawScreen(bluetooth);
+        }
+        else{
+
+          int joyX = ble_buf[2];
+          int joyY = ble_buf[3];
+          int mappedX = map(joyX, 0, 255, -255, 255);
+          int mappedY = map(joyY, 0, 255, -255, 255);
+          int leftMotorSpeed = mappedY + mappedX;
+          int rightMotorSpeed = mappedY - mappedX;
+
+          leftMotorSpeed = constrain(leftMotorSpeed, -255, 255);
+          rightMotorSpeed = constrain(rightMotorSpeed, -255, 255);
+          setMotorSpeed(leftMotorSpeed, rightMotorSpeed);
         }
       }
       else if ((ble_buf[0] == 82) && (ble_buf[1] == 7)){ //RGB Menu
+        bluetooth_mode = 0;
+
         rgb_value[ble_buf[2]-1][0] = ble_buf[3];
         rgb_value[ble_buf[2]-1][1] = ble_buf[4];
         rgb_value[ble_buf[2]-1][2] = ble_buf[5];
       }
-      else if ((ble_buf[0] == 82) && (ble_buf[1] == 6) && (ble_buf[2] != 255) && (ble_buf[3] != 255) && (ble_buf[4] != 255) && (ble_buf[5] != 255) && (ble_buf[6] != 255)){  //Led Matrix        
+      else if ((ble_buf[0] == 82) && (ble_buf[1] == 6) && (ble_buf[2] != 255) && (ble_buf[3] != 255) && (ble_buf[4] != 255) && (ble_buf[5] != 255) && (ble_buf[6] != 255)){  //Led Matrix 
+        bluetooth_mode = 0;
+
         user_led_matrix[0] = ble_buf[2];
         user_led_matrix[1] = ble_buf[3];
         user_led_matrix[2] = ble_buf[4];
@@ -548,7 +709,7 @@ void loop() {
 
         led_matrix_status = 1;
         drawScreen(user_led_matrix);
-        delay(300);
+        //delay(10);
       }
       else{
         delay(10);
@@ -558,125 +719,67 @@ void loop() {
       drawScreen(ir);
       rgbFunction();
       bleConnect();
-      //hcsr();
       if (IrReceiver.decode()) {
         IrReceiver.resume();
         if(IrReceiver.decodedIRData.command != 0){
           //Serial.println(IrReceiver.decodedIRData.command);
           if(IrReceiver.decodedIRData.command == button_up){  //Forward
             drawScreen(forward);
-            Forward(255);
+            Move(FWD,255);
             delay(500);
+            Move(STOP,0);
           }
           else if(IrReceiver.decodedIRData.command == button_down){  //Backward
             drawScreen(backward);
-            Backward(255);
+            Move(BWD,255);
             delay(500);
+            Move(STOP,0);
           }
           else if(IrReceiver.decodedIRData.command == button_left){  //Left
             drawScreen(left);
-            Left(255);
+            Move(LEFT,255);
             delay(130);
+            Move(STOP,0);
           }
           else if(IrReceiver.decodedIRData.command == button_right){  //Right
             drawScreen(right);
-            Right(255);
+            Move(RIGHT,255);
             delay(130);
+            Move(STOP,0);
           }
           else if(IrReceiver.decodedIRData.command == number_1){  //Buzzer
-            tone(BUZZER_PIN, 500);
-            delay(1000);
-            noTone(BUZZER_PIN);
-            delay(1000);
+            berry_horn();
           }
           else{ //Stop
-            Stop();
+            Move(STOP,0);
           }
           IrReceiver.decodedIRData.command = 0;
         }
       }
       break;
-    case 4: //Light Tracker Mode
-      drawScreen(sunny);
+    case 4:  //Sumo Mode
+      drawScreen(triangle);
       rgbFunction();
       bleConnect();
-      //hcsr();
-
-      LDR_L = analogRead(LDR_L_PIN);
-      //Serial.print("LDR_L : ");
-      //Serial.println(LDR_L);
-
-      LDR_R = analogRead(LDR_R_PIN);
-      //Serial.print("LDR_R : ");
-      //Serial.println(LDR_R);
-
-      if((LDR_L >= LDR_THRESHOLD) && (LDR_R >= LDR_THRESHOLD)){
-        if((LDR_R - LDR_L) >= LDR_TOLERANCE){
-          Right(150);
-        }
-        else if((LDR_L - LDR_R) >= LDR_TOLERANCE){
-          Left(150);
-        }
-        else {
-          if (distance >= 15)
-            Forward(255);
-          else
-            Stop();
-        }
-      }
-      else{
-        Stop();
-      }
+      sumo();
       break;
     case 5: //Line Tracker Mode
       drawScreen(tracker);
       rgbFunction();
       bleConnect();
-
-      leftSensor = analogRead(LEFT_SENSOR);
-      rightSensor = analogRead(RIGHT_SENSOR);
-      /*
-      Serial.print("left:");
-      Serial.println(leftSensor);
-      Serial.print("  right:");
-      Serial.println(rightSensor);
-      */
-
-      if (leftSensor >= TRACKER_THRESHOLD && rightSensor >= TRACKER_THRESHOLD) {
-        directionStt = FWD;
-      } 
-      else if (leftSensor < TRACKER_THRESHOLD && rightSensor > TRACKER_THRESHOLD) {
-        directionStt = RIGHT;
-      } 
-      else if (leftSensor > TRACKER_THRESHOLD && rightSensor < TRACKER_THRESHOLD) {
-        directionStt = LEFT;
-      } 
-      else if (leftSensor < TRACKER_THRESHOLD && rightSensor < TRACKER_THRESHOLD && directionStt != STOP) {
-        directionStt = BWD;
-      }
-
-      if (directionStt != oldDirection) {
-        oldDirection = directionStt;
-        if (directionStt == FWD)
-          Forward(140);
-        else if (directionStt == RIGHT)
-          Right(140);
-        else if (directionStt == LEFT)
-          Left(140);
-        else if (directionStt == BWD) {
-          Backward(140);
-          reverseTime = millis();
-        } else if (directionStt == STOP)
-          Stop();
-      }
-
-      if (directionStt == BWD && millis() - reverseTime > 300)
-        directionStt = STOP;
+      line_tracker();
       break;
-    case 6: //Sonic Mode
+    case 6: //Light Tracker Mode
+      drawScreen(sunny);
+      rgbFunction();
+      bleConnect();
+      light_tracker();
+      break;
+    case 7:  //Sonic Mode
       drawScreen(sonic);
       rgbFunction();
       bleConnect();
+      sonic_mode();
       break;
   }
 }
