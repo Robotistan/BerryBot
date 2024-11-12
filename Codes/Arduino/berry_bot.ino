@@ -16,10 +16,10 @@
 #define PWM_A 15
 #define IR_PIN 20
 #define PWM_B 21
-#define INPUT_B1 22
-#define INPUT_B2 23
-#define INPUT_A2 24
-#define INPUT_A1 25
+#define MOTOR_B1 22
+#define MOTOR_B2 23
+#define MOTOR_A2 24
+#define MOTOR_A1 25
 #define LEFT_SENSOR 26
 #define RIGHT_SENSOR 27
 #define LDR_R_PIN 28
@@ -130,90 +130,90 @@ Adafruit_NeoPixel strip(6, NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
 
 void attachMotor()
 {
-  pinMode(INPUT_A1, OUTPUT);
-  pinMode(INPUT_A2, OUTPUT);
-  pinMode(INPUT_B1, OUTPUT);
-  pinMode(INPUT_B2, OUTPUT);
+  pinMode(MOTOR_A1, OUTPUT);
+  pinMode(MOTOR_A2, OUTPUT);
+  pinMode(MOTOR_B1, OUTPUT);
+  pinMode(MOTOR_B2, OUTPUT);
   pinMode(PWM_A, OUTPUT);
   pinMode(PWM_B, OUTPUT);
 }
 
 void setMotorSpeed(int leftSpeed, int rightSpeed) {
   if (rightSpeed > 0) {
-    digitalWrite(INPUT_A1, LOW);
-    digitalWrite(INPUT_A2, HIGH);
+    digitalWrite(MOTOR_A1, LOW);
+    digitalWrite(MOTOR_A2, HIGH);
     if (rightSpeed < 100)
       rightSpeed = 100;
     analogWrite(PWM_A, rightSpeed);
   } 
   else {
-    digitalWrite(INPUT_A1, HIGH);
-    digitalWrite(INPUT_A2, LOW);
+    digitalWrite(MOTOR_A1, HIGH);
+    digitalWrite(MOTOR_A2, LOW);
     if (-rightSpeed < 100)
       rightSpeed = -100;
     analogWrite(PWM_A, -rightSpeed);
   }
 
   if (leftSpeed > 0) {
-    digitalWrite(INPUT_B1, LOW);
-    digitalWrite(INPUT_B2, HIGH);
+    digitalWrite(MOTOR_B1, LOW);
+    digitalWrite(MOTOR_B2, HIGH);
     if (leftSpeed < 100)
       leftSpeed = 100;
     analogWrite(PWM_B, leftSpeed);
   } 
   else {
-    digitalWrite(INPUT_B1, HIGH);
-    digitalWrite(INPUT_B2, LOW);
+    digitalWrite(MOTOR_B1, HIGH);
+    digitalWrite(MOTOR_B2, LOW);
     if (-leftSpeed < 100)
       leftSpeed = -100;
     analogWrite(PWM_B, -leftSpeed);
   }
 }
 
-void Move (int direction, int speed){
+void move (int direction, int speed){
   if (direction == FWD){
     analogWrite(PWM_A, speed);
     analogWrite(PWM_B, speed);
 
-    digitalWrite(INPUT_A1, HIGH);
-    digitalWrite(INPUT_A2, LOW);
-    digitalWrite(INPUT_B1, HIGH);
-    digitalWrite(INPUT_B2, LOW);
+    digitalWrite(MOTOR_A1, HIGH);
+    digitalWrite(MOTOR_A2, LOW);
+    digitalWrite(MOTOR_B1, HIGH);
+    digitalWrite(MOTOR_B2, LOW);
   }
   else if (direction == BWD){
     analogWrite(PWM_A, speed);
     analogWrite(PWM_B, speed);
 
-    digitalWrite(INPUT_A1, LOW);
-    digitalWrite(INPUT_A2, HIGH);
-    digitalWrite(INPUT_B1, LOW);
-    digitalWrite(INPUT_B2, HIGH);
+    digitalWrite(MOTOR_A1, LOW);
+    digitalWrite(MOTOR_A2, HIGH);
+    digitalWrite(MOTOR_B1, LOW);
+    digitalWrite(MOTOR_B2, HIGH);
   }
   else if (direction == RIGHT){
     analogWrite(PWM_A, speed);
     analogWrite(PWM_B, speed);
 
-    digitalWrite(INPUT_A1, HIGH);
-    digitalWrite(INPUT_A2, LOW);
-    digitalWrite(INPUT_B1, LOW);
-    digitalWrite(INPUT_B2, HIGH);
+    digitalWrite(MOTOR_A1, HIGH);
+    digitalWrite(MOTOR_A2, LOW);
+    digitalWrite(MOTOR_B1, LOW);
+    digitalWrite(MOTOR_B2, HIGH);
   }
   else if (direction == LEFT){
     analogWrite(PWM_A, speed);
     analogWrite(PWM_B, speed);
-    digitalWrite(INPUT_A1, LOW);
-    digitalWrite(INPUT_A2, HIGH);
-    digitalWrite(INPUT_B1, HIGH);
-    digitalWrite(INPUT_B2, LOW);
+    digitalWrite(MOTOR_A1, LOW);
+    digitalWrite(MOTOR_A2, HIGH);
+    digitalWrite(MOTOR_B1, HIGH);
+    digitalWrite(MOTOR_B2, LOW);
   }
   else if (direction == STOP){
     analogWrite(PWM_A, 0);
     analogWrite(PWM_B, 0);
 
-    digitalWrite(INPUT_A1, LOW);
-    digitalWrite(INPUT_A2, LOW);
-    digitalWrite(INPUT_B1, LOW);
-    digitalWrite(INPUT_B2, LOW);
+    digitalWrite(MOTOR_A1, LOW);
+    digitalWrite(MOTOR_A2, LOW);
+    digitalWrite(MOTOR_B1, LOW);
+    digitalWrite(MOTOR_B2, LOW);
   }
 }
 
@@ -387,7 +387,7 @@ void buttonInterruptHandler() {
   buttonState = digitalRead(MODE_BUTTON);
   if ((buttonState == HIGH) && (lastButtonState == 0)) {
     lastButtonState = 1;
-    Move(STOP,0);
+    move(STOP,0);
     if (BerryMode >= 7){
       BerryMode = 0;
     }
@@ -415,16 +415,16 @@ void light_tracker(){
   //Serial.println(LDR_R);
 
   if((LDR_R - LDR_L) >= LDR_TOLERANCE){
-    Move(RIGHT, 150);
+    move(RIGHT, 150);
   }
   else if((LDR_L - LDR_R) >= LDR_TOLERANCE){
-    Move(LEFT, 150);
+    move(LEFT, 150);
   }
   else if((LDR_L >= LDR_THRESHOLD) && (LDR_R >= LDR_THRESHOLD)){
-    Move(FWD, 255);
+    move(FWD, 255);
   }
   else{
-    Move(STOP,0);
+    move(STOP,0);
   }
 }
 
@@ -455,11 +455,11 @@ void line_tracker(){
   if (directionStt != oldDirection) {
     oldDirection = directionStt;
     if (directionStt == FWD)
-      Move(FWD, 220);
+      move(FWD, 220);
     else if (directionStt == RIGHT)
-      Move(RIGHT, 220);
+      move(RIGHT, 220);
     else if (directionStt == LEFT)
-      Move(LEFT, 220);
+      move(LEFT, 220);
     else if (directionStt == BWD) {
       reverseTime = millis();
     }
@@ -470,16 +470,16 @@ void sonic_mode(){
   long distance = hcsr();
 
   if(distance > 12){
-    Move(FWD, 255);
+    move(FWD, 255);
   }
   else{
-    Move(STOP,0);
+    move(STOP,0);
     delay(500);
-    Move(BWD, 200);
+    move(BWD, 200);
     delay(100);
-    Move(STOP, 0);
+    move(STOP, 0);
     delay(200);
-    Move(LEFT, 200);
+    move(LEFT, 200);
     if(left_counter==0){
       delay(500);
       left_counter++;
@@ -488,7 +488,7 @@ void sonic_mode(){
       delay(800);
       left_counter=0;
     }
-    Move(STOP,0);
+    move(STOP,0);
     delay(200);
   }
 }
@@ -500,35 +500,35 @@ void sumo(){
 
   if (distance <= 22) {
     if ((leftSensor >= TRACKER_THRESHOLD) || (rightSensor >= TRACKER_THRESHOLD)){
-      Move(BWD,255);
+      move(BWD,255);
       delay(500);
     }
     else if ((leftSensor < TRACKER_THRESHOLD) && (rightSensor < TRACKER_THRESHOLD)){
-      Move(FWD,255);
+      move(FWD,255);
       delay(100);
     }
     else
-      Move(STOP,0);
+      move(STOP,0);
   }
   else{
     if ((leftSensor >= TRACKER_THRESHOLD) || (rightSensor >= TRACKER_THRESHOLD)){
-        Move(BWD,255);
+        move(BWD,255);
         delay(200);
     }
     else if ((leftSensor < TRACKER_THRESHOLD) && (rightSensor < TRACKER_THRESHOLD)){
         counter += 1;
         if (counter == 3){
-          Move(FWD,180);
+          move(FWD,180);
           delay(100);
           counter = 0;
         }
         else{
-          Move(LEFT,180);
+          move(LEFT,180);
           delay(100);
-          Move(STOP,0);
+          move(STOP,0);
         }
     }else
-      Move(STOP,0);
+      move(STOP,0);
   }
 }
 
@@ -570,7 +570,7 @@ void loop() {
       drawScreen(smile);
       rgbFunction();
       bleConnect();
-      Move(STOP,0);
+      move(STOP,0);
       break;
     case 1: //Bluetooth Settings
       drawScreen(bluetooth);
@@ -674,7 +674,7 @@ void loop() {
 
         if((ble_buf[2] == 0) && (ble_buf[3] == 0)){
           led_matrix_status = 0;
-          Move(STOP,0);
+          move(STOP,0);
           drawScreen(bluetooth);
         }
         else{
@@ -725,33 +725,33 @@ void loop() {
           //Serial.println(IrReceiver.decodedIRData.command);
           if(IrReceiver.decodedIRData.command == button_up){  //Forward
             drawScreen(forward);
-            Move(FWD,255);
+            move(FWD,255);
             delay(500);
-            Move(STOP,0);
+            move(STOP,0);
           }
           else if(IrReceiver.decodedIRData.command == button_down){  //Backward
             drawScreen(backward);
-            Move(BWD,255);
+            move(BWD,255);
             delay(500);
-            Move(STOP,0);
+            move(STOP,0);
           }
           else if(IrReceiver.decodedIRData.command == button_left){  //Left
             drawScreen(left);
-            Move(LEFT,255);
+            move(LEFT,255);
             delay(130);
-            Move(STOP,0);
+            move(STOP,0);
           }
           else if(IrReceiver.decodedIRData.command == button_right){  //Right
             drawScreen(right);
-            Move(RIGHT,255);
+            move(RIGHT,255);
             delay(130);
-            Move(STOP,0);
+            move(STOP,0);
           }
           else if(IrReceiver.decodedIRData.command == number_1){  //Buzzer
             berry_horn();
           }
           else{ //Stop
-            Move(STOP,0);
+            move(STOP,0);
           }
           IrReceiver.decodedIRData.command = 0;
         }
