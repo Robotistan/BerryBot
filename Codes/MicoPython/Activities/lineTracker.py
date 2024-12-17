@@ -13,10 +13,13 @@ MOTOR_PWM_B_PIN = 21
 LEFT_TRACKER = 26
 RIGHT_TRACKER = 27
 MODE_BUTTON = 10
-
 #############Variables####################
 Mid_Speed = 58000
 Low_Speed = 43000
+
+Max_Speed = 65000
+Mid_Speed = 50000
+Low_Speed = 47000
 
 STOP = 0
 FWD = 1
@@ -24,7 +27,7 @@ LEFT = 2
 RIGHT = 3
 BWD = 4
 
-threshold = 60000
+TRACKER_THRESHOLD = 60000
 directionStt = STOP
 oldDirection = STOP
 
@@ -38,7 +41,6 @@ while (push_button.value()==0):
     motor.stop()
     
 while True:
-    
     leftSensorValue = leftSensor.read_u16()
     rightSensorValue = rightSensor.read_u16()
     #print(leftSensorValue)
@@ -57,19 +59,10 @@ while True:
     if directionStt != oldDirection:
         oldDirection = directionStt
         if directionStt == FWD:
-            motor.forward(Mid_Speed)    
+            motor.move(FWD, Mid_Speed)    
         elif directionStt == RIGHT:
-            motor.right(Mid_Speed)
+            motor.move(RIGHT, Mid_Speed)
         elif directionStt == LEFT:
-            motor.left(Mid_Speed)
+            motor.move(LEFT, Mid_Speed)
         elif directionStt == BWD:
-            #motor.backward(Low_Speed)
-            reversTime = utime.ticks_ms()   
-        #elif directionStt == STOP:
-            #motor.stop()
-            
-        #print(directionStt)
-        #print(oldDirection)
-    if directionStt == ("BWD") and (utime.ticks_ms()) - reversTime > (300):
-        directionStt = "STOP"
-        
+            motor.move(BWD, Low_Speed)   
