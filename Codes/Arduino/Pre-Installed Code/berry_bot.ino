@@ -41,7 +41,7 @@
 #define button_right 90
 #define button_left 8
 #define button_ok 28
-
+// Define constants
 #define DECODE_NEC
 #define PIXEL_INTERVAL 100
 #define LDR_THRESHOLD 250
@@ -105,7 +105,7 @@ int direction = 0;
 int right_speed = 0;
 int left_speed = 0;
 
-// Led Matrix
+// Define the LED matrix symbols
 int smile[5] =     {0x0A,0x0A,0x00,0x11,0x0E};
 int yes[5] =       {0x00,0x01,0x02,0x14,0x08};
 int no[5] =        {0x11,0x0A,0x04,0x0A,0x11};
@@ -128,6 +128,7 @@ int user_led_matrix[5];
 // Function Declaration
 Adafruit_NeoPixel strip(6, NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
 
+// Function to initialize motor pins
 void attachMotor()
 {
   pinMode(MOTOR_A1, OUTPUT);
@@ -138,6 +139,7 @@ void attachMotor()
   pinMode(PWM_B, OUTPUT);
 }
 
+// Function to set motor speeds (for left and right motors)
 void setMotorSpeed(int leftSpeed, int rightSpeed) {
   if (rightSpeed > 0) {
     digitalWrite(MOTOR_A1, LOW);
@@ -170,8 +172,9 @@ void setMotorSpeed(int leftSpeed, int rightSpeed) {
   }
 }
 
+// Function to move the robot in different directions
 void move (int direction, int speed){
-  if (direction == FWD){
+  if (direction == FWD){  // Forward
     analogWrite(PWM_A, speed);
     analogWrite(PWM_B, speed);
 
@@ -180,7 +183,7 @@ void move (int direction, int speed){
     digitalWrite(MOTOR_B1, HIGH);
     digitalWrite(MOTOR_B2, LOW);
   }
-  else if (direction == BWD){
+  else if (direction == BWD){  // Backward
     analogWrite(PWM_A, speed);
     analogWrite(PWM_B, speed);
 
@@ -189,7 +192,7 @@ void move (int direction, int speed){
     digitalWrite(MOTOR_B1, LOW);
     digitalWrite(MOTOR_B2, HIGH);
   }
-  else if (direction == RIGHT){
+  else if (direction == RIGHT){  // Right
     analogWrite(PWM_A, speed);
     analogWrite(PWM_B, speed);
 
@@ -198,7 +201,7 @@ void move (int direction, int speed){
     digitalWrite(MOTOR_B1, LOW);
     digitalWrite(MOTOR_B2, HIGH);
   }
-  else if (direction == LEFT){
+  else if (direction == LEFT){  // Left
     analogWrite(PWM_A, speed);
     analogWrite(PWM_B, speed);
     digitalWrite(MOTOR_A1, LOW);
@@ -206,7 +209,7 @@ void move (int direction, int speed){
     digitalWrite(MOTOR_B1, HIGH);
     digitalWrite(MOTOR_B2, LOW);
   }
-  else if (direction == STOP){
+  else if (direction == STOP){  // Stop
     analogWrite(PWM_A, 0);
     analogWrite(PWM_B, 0);
 
@@ -217,6 +220,7 @@ void move (int direction, int speed){
   }
 }
 
+// Function to sound the horn
 void berry_horn() {
   for(int i=0; i<50; i++){
     digitalWrite(BUZZER_PIN, HIGH);
@@ -226,6 +230,7 @@ void berry_horn() {
   }
 }
 
+// Function for BLE response handling
 void BLEReadResponse() {
   int timeout = 150;
   while (!Serial1.available() && timeout > 0) {
@@ -239,6 +244,7 @@ void BLEReadResponse() {
   }
 }
 
+// Function to configure BLE
 void BLEConfigure() {
   Serial1.begin(115200);
   Serial1.write("AT+BLENAME=BerryBot");
@@ -272,12 +278,14 @@ volatile int ledRow = 0;
 volatile int prevLedRow = 4;
 volatile byte ledArrayBuffer[5];
 
+// Function to draw LED matrix screen based on a buffer array
 void drawScreen(int buffer[]){
   for (i = 0; i<5; i++) {
       ledArrayBuffer[i] = buffer[i];
   }
 }
 
+// Function to set LED matrix columns
 void setColumns(byte b) {
     digitalWrite(colPins[0], (~b >> 0) & 0x01); 
     digitalWrite(colPins[1], (~b >> 1) & 0x01); 
@@ -286,6 +294,7 @@ void setColumns(byte b) {
     digitalWrite(colPins[4], (~b >> 4) & 0x01); 
 }
 
+// Timer interrupt handler function for controlling LED matrix
 bool TimerHandler0(struct repeating_timer *t)
 {
   (void) t; 
@@ -300,6 +309,7 @@ bool TimerHandler0(struct repeating_timer *t)
   return true;
 }
 
+// Function to control the NeoPixel LED strip in various modes
 void pixelFunction() {
   if (pixelMode == 0) {
     strip.setPixelColor(pixelNumber, rgb_value[pixelNumber][0], rgb_value[pixelNumber][1], rgb_value[pixelNumber][2]);
@@ -334,6 +344,7 @@ void pixelFunction() {
   }
 }
 
+// Function to handle the NeoPixel LED strip updates based on a defined interval
 void rgbFunction(){
   currentTime = millis();
   if (currentTime - pixelChangeTime > PIXEL_INTERVAL) {
@@ -342,6 +353,7 @@ void rgbFunction(){
   }
 }
 
+// Function to handle ultrasonic sensor (HC-SR04) measurement
 long hcsr() {
   long distance;
   digitalWrite(TRIG_PIN, LOW);
@@ -360,29 +372,31 @@ long hcsr() {
   return distance;
 }
 
+// Function to handle BLE connection status and control the onboard LED for connection indication
 void bleConnect (){
   if (bleConnected == false) {
     if (millis() - ledTime > BLE_BLINK_INTERVAL) {
-      ledTime = millis();
+      ledTime = millis();  // Update the blink time
       if (ledWasOn == 0) {    // LED ON AT command
         Serial1.write("AT+SYSGPIOWRITE=0,0");
         Serial1.write("\r\n");
-        ledWasOn = 1;
+        ledWasOn = 1;  // Set LED status as on
       } 
       else {  // LED OFF AT Command
         Serial1.write("AT+SYSGPIOWRITE=0,1");
         Serial1.write("\r\n");
-        ledWasOn = 0;
+        ledWasOn = 0;  // Set LED status as off
       }
     }
   }
-  else{
+  else{  // Keep the LED on if BLE is connected
     Serial1.write("AT+SYSGPIOWRITE=0,0");
     Serial1.write("\r\n");
     ledWasOn = 1;
   }
 }
 
+// Interrupt handler for the MODE_BUTTON. Used to switch modes when the button is pressed.
 void buttonInterruptHandler() {
   buttonState = digitalRead(MODE_BUTTON);
   if ((buttonState == HIGH) && (lastButtonState == 0)) {
@@ -402,8 +416,9 @@ void buttonInterruptHandler() {
   }
 }
 
-RPI_PICO_Timer ITimer0(0);
+RPI_PICO_Timer ITimer0(0);  // Timer interrupt for controlling LED matrix
 
+// Function to track light levels from two LDR sensors and adjust movement accordingly
 void light_tracker(){
   delay(10);
   LDR_L = analogRead(LDR_L_PIN);
@@ -414,20 +429,22 @@ void light_tracker(){
   //Serial.print("LDR_R : ");
   //Serial.println(LDR_R);
 
+  // If there is significant difference in LDR values, turn the robot accordingly
   if((LDR_R - LDR_L) >= LDR_TOLERANCE){
-    move(RIGHT, 150);
+    move(RIGHT, 150);  // Move right if right LDR value is higher
   }
   else if((LDR_L - LDR_R) >= LDR_TOLERANCE){
-    move(LEFT, 150);
+    move(LEFT, 150);  // Move left if left LDR value is higher
   }
   else if((LDR_L >= LDR_THRESHOLD) && (LDR_R >= LDR_THRESHOLD)){
-    move(FWD, 255);
+    move(FWD, 255);   // Move forward if both LDR values are high
   }
   else{
-    move(STOP,0);
+    move(STOP,0);  // Stop if both LDR values are low
   }
 }
 
+// Function to follow a line using two sensors (left and right)
 void line_tracker(){
   leftSensor = analogRead(LEFT_SENSOR);
   rightSensor = analogRead(RIGHT_SENSOR);
@@ -439,40 +456,44 @@ void line_tracker(){
   Serial.println(rightSensor);
   */
 
+  // Determine direction based on sensor readings
   if (leftSensor >= TRACKER_THRESHOLD && rightSensor >= TRACKER_THRESHOLD) {
-    directionStt = FWD;
+    directionStt = FWD;  // Move forward if both sensors detect the line
   } 
   else if (leftSensor < TRACKER_THRESHOLD && rightSensor > TRACKER_THRESHOLD) {
-    directionStt = LEFT;
+    directionStt = LEFT;  // Turn left if only right sensor detects the line
   } 
   else if (leftSensor > TRACKER_THRESHOLD && rightSensor < TRACKER_THRESHOLD) {
-    directionStt = RIGHT;
+    directionStt = RIGHT;  // Turn right if only left sensor detects the line
   } 
   else if (leftSensor < TRACKER_THRESHOLD && rightSensor < TRACKER_THRESHOLD && directionStt != STOP) {
-    directionStt = BWD;
+    directionStt = BWD;  // Move backward if neither sensor detects the line
   }
 
+  // Move in the detected direction
   if (directionStt != oldDirection) {
     oldDirection = directionStt;
-    if (directionStt == FWD)
+    if (directionStt == FWD)    // Forward
       move(FWD, 220);
     else if (directionStt == RIGHT)
       move(RIGHT, 220);
     else if (directionStt == LEFT)
       move(LEFT, 220);
-    else if (directionStt == BWD) {
+    else if (directionStt == BWD) {   //Backward
       reverseTime = millis();
     }
   }
 }
 
+// Function to operate the robot in sonic mode based on distance measurements
 void sonic_mode(){
-  long distance = hcsr();
+  long distance = hcsr();  // Get the distance from the ultrasonic sensor
 
+  // If distance is more than 12 cm, move forward
   if(distance > 12){
     move(FWD, 255);
   }
-  else{
+  else{  // If too close, stop and perform reverse and turn movements
     move(STOP,0);
     delay(500);
     move(BWD, 200);
@@ -493,12 +514,13 @@ void sonic_mode(){
   }
 }
 
+// Function to handle the sumo mode, where the robot moves to avoid obstacles
 void sumo(){
-  long distance = hcsr();
-  leftSensor = analogRead(LEFT_SENSOR);
-  rightSensor = analogRead(RIGHT_SENSOR);
+  long distance = hcsr();  // Get distance from ultrasonic sensor
+  leftSensor = analogRead(LEFT_SENSOR);     // Read left sensor
+  rightSensor = analogRead(RIGHT_SENSOR);  // Read right sensor
 
-  if (distance <= 22) {
+  if (distance <= 22) {  // If object is too close
     if ((leftSensor >= TRACKER_THRESHOLD) || (rightSensor >= TRACKER_THRESHOLD)){
       move(BWD,255);
       delay(500);
@@ -533,18 +555,19 @@ void sumo(){
 }
 
 void setup() {
-  Serial.begin(115200);
-  Wire.begin();
+  Serial.begin(115200);  // Initialize serial communication at 115200 baud rate
+  Wire.begin();  // Start the I2C communication
   delay(1999);
-  BLEConfigure();
+  BLEConfigure();  // Configure the Bluetooth communication
   pinMode(BUZZER_PIN, OUTPUT);
-  strip.begin();
-  attachMotor();
+  strip.begin();  // Initialize the NeoPixel strip
+  attachMotor();  // Initialize motor control pins
   pinMode(LDR_L_PIN, INPUT_PULLUP);
   pinMode(LDR_R_PIN, INPUT_PULLUP);
-  IrReceiver.begin(IR_PIN);
+  IrReceiver.begin(IR_PIN);  // Initialize IR receiver
   pinMode(TRIG_PIN, OUTPUT);
   pinMode(ECHO_PIN, INPUT);
+  // Set up the columns and rows for the LED matrix
   for (int i = 0; i < 5; i++)
   {
     pinMode(colPins[i], OUTPUT);       
@@ -553,7 +576,9 @@ void setup() {
   pinMode(LEFT_SENSOR, INPUT);
   pinMode(RIGHT_SENSOR, INPUT);
   pinMode(MODE_BUTTON, OUTPUT);
+  // Attach an interrupt to the MODE_BUTTON to handle mode switching
   attachInterrupt(digitalPinToInterrupt(MODE_BUTTON), buttonInterruptHandler, CHANGE);
+  // Set up a timer interrupt to handle tasks at regular intervals
   if (ITimer0.attachInterruptInterval(3 * 1000, TimerHandler0))
   {
     Serial.print(F("Starting ITimer0 OK, millis() = ")); Serial.println(millis());
@@ -575,7 +600,7 @@ void loop() {
     case 1: //Bluetooth Settings
       drawScreen(bluetooth);
       rgbFunction();
-      bleConnect();
+      bleConnect();  
       Serial1.write("+++");
       delay(300);
       Serial1.write("AT+TRANSENTER");
@@ -596,16 +621,16 @@ void loop() {
         rgbFunction();
       }
 
-      ble_data = Serial1.read();
+      ble_data = Serial1.read();  // Read the Bluetooth data
       
       if(ble_data == -1){
         ble_data = 0;
         ble_cnt = 0;
         for(int i=0; i<10; i++){
-          ble_buf[i] = 0xFF;
+          ble_buf[i] = 0xFF;  // Reset the buffer if no data
         }
       }
-      else if (ble_data == 82){
+      else if (ble_data == 82){  // Handle Bluetooth Header command
         ble_cnt = 0;
         ble_buf[0] = ble_data;
         for(int i=1; i<10; i++){
@@ -614,13 +639,13 @@ void loop() {
         ble_cnt++;
         ble_data = 0;
       }
-      else{
+      else{  // Store the Bluetooth data in the buffer
         ble_buf[ble_cnt] = ble_data;
         ble_cnt++;
         ble_data = 0;
       }
 
-      if (ble_data == '+') {
+      if (ble_data == '+') {  // Check if the BLE device has disconnected
         String bleStr = Serial1.readStringUntil(0x0A);
         if (bleStr.indexOf("BLE_DISCONNECT") > -1) {
           ble_data = 0;
@@ -631,7 +656,7 @@ void loop() {
         }
       }
 
-      bleConnect();
+      bleConnect();  // Handle different Bluetooth commands
 
       if((ble_buf[0] == 82) && (ble_buf[1] == 2) && (ble_buf[2] == 1) && (ble_buf[3] == 0)){ //Neo turn on/off
         bluetooth_mode = 0;
