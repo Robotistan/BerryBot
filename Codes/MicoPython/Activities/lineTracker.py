@@ -47,13 +47,13 @@ while True:
     #print(rightSensorValue)
     #sleep(0.01)
 
-    if leftSensorValue >= threshold and rightSensorValue >= threshold:
+    if leftSensorValue >= TRACKER_THRESHOLD and rightSensorValue >= TRACKER_THRESHOLD:
         directionStt = FWD
-    elif leftSensorValue < threshold and rightSensorValue > threshold:
+    elif leftSensorValue < TRACKER_THRESHOLD and rightSensorValue > TRACKER_THRESHOLD:
         directionStt = RIGHT
-    elif leftSensorValue > threshold and rightSensorValue < threshold:
+    elif leftSensorValue > TRACKER_THRESHOLD and rightSensorValue < TRACKER_THRESHOLD:
         directionStt = LEFT
-    elif leftSensorValue < threshold and rightSensorValue < threshold and directionStt != STOP:
+    elif leftSensorValue < TRACKER_THRESHOLD and rightSensorValue < TRACKER_THRESHOLD and directionStt != STOP:
         directionStt = BWD
         
     if directionStt != oldDirection:
