@@ -13,8 +13,11 @@ LEFT_TRACKER = 26
 RIGHT_TRACKER = 27
 MODE_BUTTON = 10
 #############Variables####################
-MotorSpeed = 50000
-threshold = 60000
+Max_Speed = 65000
+Mid_Speed = 50000
+Low_Speed = 47000
+
+TRACKER_THRESHOLD = 50000
 counter = 0
 ##########Pin Initialization##########
 motor = TB6612(MOTOR_A1_PIN, MOTOR_A2_PIN, MOTOR_B1_PIN, MOTOR_B2_PIN, MOTOR_PWM_A_PIN, MOTOR_PWM_B_PIN)
@@ -36,27 +39,27 @@ while True:
     #print(rightSensorValue)
     sleep(0.02)
     if distance <= 15:
-        if leftSensorValue >= threshold or rightSensorValue >= threshold:
-            motor.backward(MotorSpeed)
+        if leftSensorValue >= TRACKER_THRESHOLD or rightSensorValue >= TRACKER_THRESHOLD:
+            motor.move(BWD, Mid_Speed)
             sleep(0.5)
-        elif leftSensorValue < threshold and rightSensorValue < threshold:
-            motor.forward(MotorSpeed)
+        elif leftSensorValue < TRACKER_THRESHOLD and rightSensorValue < TRACKER_THRESHOLD:
+            motor.move(FWD, Mid_Speed)
             sleep(0.5)
         else:
-            motor.stop()
+            motor.move(STOP, 0)
     else:
-        if leftSensorValue >= threshold or rightSensorValue >= threshold:
-            motor.backward(MotorSpeed)
+        if leftSensorValue >= TRACKER_THRESHOLD or rightSensorValue >= TRACKER_THRESHOLD:
+            motor.move(BWD, Mid_Speed)
             sleep(0.1)
-        elif leftSensorValue < threshold and rightSensorValue < threshold:
+        elif leftSensorValue < TRACKER_THRESHOLD and rightSensorValue < TRACKER_THRESHOLD:
             counter = counter + 1
             if counter == 3:
-                motor.forward(MotorSpeed)
+                motor.move(FWD, Mid_Speed)
                 sleep(0.1)
                 counter = 0
             else: 
-                motor.left(MotorSpeed)
+                motor.move(LEFT, Mid_Speed)
                 sleep(0.1)
-                motor.stop()
+                motor.move(STOP, 0)
         else:
-            motor.stop()
+            motor.move(STOP, 0)
