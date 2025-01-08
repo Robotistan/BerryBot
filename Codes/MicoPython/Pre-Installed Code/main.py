@@ -82,7 +82,7 @@ uart = UART(0, 115200, parity=None, stop = 1, bits = 8, tx=Pin(0), rx=Pin(1),tim
 ble = BLE(uart)
 ble.configure()
 motor = TB6612(MOTOR_A1_PIN, MOTOR_A2_PIN, MOTOR_B1_PIN, MOTOR_B2_PIN, MOTOR_PWM_A_PIN, MOTOR_PWM_B_PIN)
-sensor = HCSR04(trigger_pin=8, echo_pin=9, echo_timeout_us=10000)
+#sensor = HCSR04(trigger_pin=8, echo_pin=9, echo_timeout_us=10000)
 button = Pin(10, Pin.IN)
 rgb = WS2812(7,NEOPIXEL_PIN,0.2)
 matrix = LEDMatrix(rowPins, colPins)
@@ -128,6 +128,13 @@ def map_value(x, in_min, in_max, out_min, out_max):
 
 def constrain(x, min_val, max_val):
     return max(min(x, max_val), min_val)
+
+def drawScreen(buffer):
+    led_array_buffer = [0] * 5  # Initialize the LED array buffer with 5 elements.
+    for i in range(5):
+        led_array_buffer[i] = buffer[i]
+    return led_array_buffer  # Return the updated LED array buffer.
+
 ##########Modes##########
 def remote():
     global data_rcvd, ir_data
