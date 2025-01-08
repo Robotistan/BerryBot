@@ -3,7 +3,7 @@ from machine import I2C, Pin, PWM, UART, Timer, ADC
 import time, utime
 from time import sleep
 import random
-from berrybot import TB6612, NEC_ABC, NEC_16, WS2812, IR_RX, BLE, LEDMatrix
+from berrybot import TB6612, NEC_ABC, NEC_16, WS2812, IR_RX, BLE, LEDMatrix, HCSR04
 ##########Pin Defination##########
 TX_PIN = 0
 RX_PIN = 1
