@@ -82,7 +82,7 @@ uart = UART(0, 115200, parity=None, stop = 1, bits = 8, tx=Pin(0), rx=Pin(1),tim
 ble = BLE(uart)
 ble.configure()
 motor = TB6612(MOTOR_A1_PIN, MOTOR_A2_PIN, MOTOR_B1_PIN, MOTOR_B2_PIN, MOTOR_PWM_A_PIN, MOTOR_PWM_B_PIN)
-#sensor = HCSR04(trigger_pin=8, echo_pin=9, echo_timeout_us=10000)
+sensor = HCSR04(trigger_pin=8, echo_pin=9, echo_timeout_us=10000)
 button = Pin(10, Pin.IN)
 rgb = WS2812(7,NEOPIXEL_PIN,0.2)
 matrix = LEDMatrix(rowPins, colPins)
@@ -208,7 +208,7 @@ def lightTracker():
         motor.move(STOP, 0)
         
 def sumo():
-    global distance, leftSensorValue, rightSensorValue
+    global distance, leftSensorValue, rightSensorValue, counter
     
     distance = sensor.distance_cm()
     leftSensorValue = leftSensor.read_u16()
@@ -276,7 +276,7 @@ elapsed_time = time.ticks_diff(time.ticks_ms(), start_time)
 while True:
     lastButtonState = 0
     if rgb_status == 1:
-        rgb.color_function()
+        rgb.color_function(rgb_value)
         
     if berryMode == 0:  #Choose Mode
         ble.connect()
@@ -289,25 +289,25 @@ while True:
             matrix.draw_screen(user_led_matrix)
             
         if(rgb_status == 1):
-            rgb.color_function()
+            rgb.color_function(rgb_value)
             
         ble_buf = ble.read()
         if ble_buf != b'':
             for i in range(len(ble_buf)):
                 print(ble_buf[i])
-            if((ble_buf[0] == 82) and (ble_buf[1] == 2) and (ble_buf[2] == 1) and (ble_buf[3] == 0)): # Neo turn on/off
+            if((ble_buf[0] == 82) and (ble_buf[1] == 2) and (ble_buf[2] == 1) and (ble_buf[3] == 0)): # Neo turn off
                 bluetooth_mode = 0
-                if(rgb_status == 1):
-                    rgb_status = 0
-                    for i in range(6):
-                        rgb.pixels_set(i, (0, 0, 0))
-                        rgb.pixels_show()
-                        time.sleep(0.05)
-                else:
-                    rgb_status = 1
+                rgb_status = 0
+                for i in range(6):
+                    rgb.pixels_set(i, (0, 0, 0))
+                    rgb.pixels_show()
+                    time.sleep(0.05)
+            elif ((ble_buf[0] == 82) and (ble_buf[1] == 2) and (ble_buf[2] == 90) and (ble_buf[3] == 0)): # Neo turn on
+                bluetooth_mode = 0
+                rgb_status = 1
             elif ((ble_buf[0] == 82) and (ble_buf[1] == 2) and (ble_buf[2] == 2) and (ble_buf[3] == 0)): # Horn
-                bluetooth_mode = 0;
-                berry_horn();
+                bluetooth_mode = 0
+                berry_horn()
             elif (((ble_buf[0] == 82) and (ble_buf[1] == 2) and (ble_buf[2] == 4) and (ble_buf[3] == 0)) or (bluetooth_mode == 1)): # Sonic
                 bluetooth_mode = 1
                 sonic()
@@ -359,28 +359,30 @@ while True:
 
                 led_matrix_status = 1
                 drawScreen(user_led_matrix)
-
+            elif ((ble_buf[0] == 82) and (ble_buf[1] == 2) and (ble_buf[2] == 99)): #Exit modes
+                bluetooth_mode = 0
+                
             ble_buf = bytes()
             #time.sleep(0.05)
         else:
             pass
     if berryMode == 2:  #IR Mode
-        rgb.color_function()
+        rgb.color_function(rgb_value)
         matrix.draw_screen(ir_img)
         remote()
     if berryMode == 3:  #Line Tracker Mode
-        rgb.color_function()
+        rgb.color_function(rgb_value)
         matrix.draw_screen(tracker)
         lineTracker()
     if berryMode == 4:  #Light Tracker Mode
-        rgb.color_function()
+        rgb.color_function(rgb_value)
         matrix.draw_screen(sunny)
         lightTracker()
     if berryMode == 5:  #Sonic Mode
-        rgb.color_function()
+        rgb.color_function(rgb_value)
         matrix.draw_screen(sonic);
         sonic()
     if berryMode == 6:  #Sumo Mode
-        rgb.color_function()
+        rgb.color_function(rgb_value)
         matrix.draw_screen(triangle)
         sumo()
