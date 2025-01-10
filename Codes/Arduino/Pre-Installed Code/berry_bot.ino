@@ -658,20 +658,19 @@ void loop() {
 
       bleConnect();  // Handle different Bluetooth commands
 
-      if((ble_buf[0] == 82) && (ble_buf[1] == 2) && (ble_buf[2] == 1) && (ble_buf[3] == 0)){ //Neo turn on/off
+      if((ble_buf[0] == 82) && (ble_buf[1] == 2) && (ble_buf[2] == 1) && (ble_buf[3] == 0)){ //Neo turn off
         bluetooth_mode = 0;
-        if(rgb_status == 1){
-          rgb_status = 0;
-          for(i=0; i<6; i++){
-            strip.setPixelColor(i, 0, 0, 0);
-            strip.show();
-            delay(50);
-          }
+        rgb_status = 0;
+        for(i=0; i<6; i++){
+          strip.setPixelColor(i, 0, 0, 0);
           strip.show();
+          delay(50);
         }
-        else{
-          rgb_status = 1;
-        }
+        strip.show();
+      }
+      else if((ble_buf[0] == 82) && (ble_buf[1] == 2) && (ble_buf[2] == 90) && (ble_buf[3] == 0)){ //Neo turn on
+        bluetooth_mode = 0;
+        rgb_status = 1;
       }
       else if ((ble_buf[0] == 82) && (ble_buf[1] == 2) && (ble_buf[2] == 2) && (ble_buf[3] == 0)){ //Horn
         bluetooth_mode = 0;
@@ -703,7 +702,6 @@ void loop() {
           drawScreen(bluetooth);
         }
         else{
-
           int joyX = ble_buf[2];
           int joyY = ble_buf[3];
           int mappedX = map(joyX, 0, 255, -255, 255);
@@ -735,6 +733,9 @@ void loop() {
         led_matrix_status = 1;
         drawScreen(user_led_matrix);
         //delay(10);
+      }
+      else if ((ble_buf[0] == 82) && (ble_buf[1] == 2) && (ble_buf[2] == 99)){  //Exit modes
+          bluetooth_mode = 0;
       }
       else{
         delay(10);
