@@ -166,7 +166,14 @@ class WS2812():
             self.pixels_show()
         time.sleep(0.2)
         
-    def color_function(self):
+    def color_update(self, pix_values):
+        for i in range(self.num_leds):
+            self.rgb_value[i][0] = pix_values[i][0]
+            self.rgb_value[i][1] = pix_values[i][1]
+            self.rgb_value[i][2] = pix_values[i][2]
+        
+    def color_function(self, pix_values):
+        self.color_update(pix_values)
         current_time = time.ticks_ms()  # Get the current time in milliseconds
         if time.ticks_diff(current_time, self.pixel_change_time) > self.pixel_interval:  # Check interval
             self.pixel_function()  # Update pixels
