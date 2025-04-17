@@ -295,7 +295,10 @@ while True:
         if ble_buf != b'':
             for i in range(len(ble_buf)):
                 print(ble_buf[i])
-            if((ble_buf[0] == 82) and (ble_buf[1] == 2) and (ble_buf[2] == 1) and (ble_buf[3] == 0)): # Neo turn off
+            if ((ble_buf[0] == 82) and (ble_buf[1] == 2) and (ble_buf[2] == 99)): #Exit modes
+                bluetooth_mode = 0
+                motor.move(STOP,0)
+            elif((ble_buf[0] == 82) and (ble_buf[1] == 2) and (ble_buf[2] == 1) and (ble_buf[3] == 0)): # Neo turn off
                 bluetooth_mode = 0
                 rgb_status = 0
                 for i in range(6):
@@ -359,8 +362,6 @@ while True:
 
                 led_matrix_status = 1
                 drawScreen(user_led_matrix)
-            elif ((ble_buf[0] == 82) and (ble_buf[1] == 2) and (ble_buf[2] == 99)): #Exit modes
-                bluetooth_mode = 0
                 
             ble_buf = bytes()
             #time.sleep(0.05)
