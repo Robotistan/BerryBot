@@ -1,5 +1,3 @@
-// You must select the "Generic RP2040" board from the Arduino IDE board manager
-
 // Libraries
 #include <Wire.h>
 #include <picobricks.h>
