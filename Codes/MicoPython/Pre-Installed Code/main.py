@@ -114,7 +114,7 @@ def buttonInterruptHandler(event):    # Interrupt event, that will work when but
     buttonState = button.value()
     if buttonState == 1 and lastButtonState == 0:
         lastButtonState = 1
-        if berryMode >= 6:
+        if berryMode >= 5:
             berryMode = 0
         else:
             berryMode += 1
@@ -277,12 +277,8 @@ while True:
     lastButtonState = 0
     if rgb_status == 1:
         rgb.color_function(rgb_value)
-        
-    if berryMode == 0:  #Choose Mode
-        ble.connect()
-        matrix.draw_screen(smile)
-        ir = NEC_16(Pin(IR_PIN, Pin.IN), ir_callback)
-    if berryMode == 1:  #Bluetooth Mode
+
+    if berryMode == 0:  #Bluetooth Mode
         if(led_matrix_status == 0):
             matrix.draw_screen(bluetooth)
         elif (led_matrix_status == 1):
@@ -367,23 +363,23 @@ while True:
             #time.sleep(0.05)
         else:
             pass
-    if berryMode == 2:  #IR Mode
+    if berryMode == 1:  #IR Mode
         rgb.color_function(rgb_value)
         matrix.draw_screen(ir_img)
         remote()
-    if berryMode == 3:  #Line Tracker Mode
+    if berryMode == 2:  #Line Tracker Mode
         rgb.color_function(rgb_value)
         matrix.draw_screen(tracker)
         lineTracker()
-    if berryMode == 4:  #Light Tracker Mode
+    if berryMode == 3:  #Light Tracker Mode
         rgb.color_function(rgb_value)
         matrix.draw_screen(sunny)
         lightTracker()
-    if berryMode == 5:  #Sonic Mode
+    if berryMode == 4:  #Sonic Mode
         rgb.color_function(rgb_value)
         matrix.draw_screen(sonic);
         sonic()
-    if berryMode == 6:  #Sumo Mode
+    if berryMode == 5:  #Sumo Mode
         rgb.color_function(rgb_value)
         matrix.draw_screen(triangle)
         sumo()
