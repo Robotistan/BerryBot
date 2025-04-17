@@ -1,6 +1,8 @@
+// You must select the "Generic RP2040" board from the Arduino IDE board manager
+
 // Libraries
 #include <Wire.h>
-#include <Adafruit_NeoPixel.h>
+#include <picobricks.h>
 #include <stdio.h>
 #include <IRremote.h>
 #include "RPi_Pico_TimerInterrupt.h"
@@ -46,7 +48,8 @@
 #define PIXEL_INTERVAL 100
 #define LDR_THRESHOLD 250
 #define LDR_TOLERANCE 75
-#define TRACKER_THRESHOLD 500
+#define TRACKER_THRESHOLD 700
+#define RGB_COUNT 6
 
 #define STOP  0
 #define FWD   1
@@ -126,7 +129,7 @@ int triangle[5] =  {0x1F,0x11,0x11,0x0A,0x04};
 int user_led_matrix[5];
 
 // Function Declaration
-Adafruit_NeoPixel strip(6, NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
+NeoPixel strip (NEOPIXEL_PIN, RGB_COUNT);
 
 // Function to initialize motor pins
 void attachMotor()
@@ -314,7 +317,6 @@ void pixelFunction() {
   if (pixelMode == 0) {
     strip.setPixelColor(pixelNumber, rgb_value[pixelNumber][0], rgb_value[pixelNumber][1], rgb_value[pixelNumber][2]);
     pixelNumber++;
-    strip.show();
     if (pixelNumber > 6) {
       pixelNumber = 0;
       pixelMode = 1;
@@ -329,7 +331,6 @@ void pixelFunction() {
   }
   if (pixelMode == 2) {
     strip.setPixelColor(pixelNumber++, 0, 0, 0);
-    strip.show();
     if (pixelNumber > 6) {
       pixelNumber = 0;
       pixelMode = 3;
@@ -402,7 +403,7 @@ void buttonInterruptHandler() {
   if ((buttonState == HIGH) && (lastButtonState == 0)) {
     lastButtonState = 1;
     move(STOP,0);
-    if (BerryMode >= 7){
+    if (BerryMode >= 6){
       BerryMode = 0;
     }
     else{
@@ -448,13 +449,6 @@ void light_tracker(){
 void line_tracker(){
   leftSensor = analogRead(LEFT_SENSOR);
   rightSensor = analogRead(RIGHT_SENSOR);
-  
-  /*
-  Serial.print("left:");
-  Serial.println(leftSensor);
-  Serial.print("  right:");
-  Serial.println(rightSensor);
-  */
 
   // Determine direction based on sensor readings
   if (leftSensor >= TRACKER_THRESHOLD && rightSensor >= TRACKER_THRESHOLD) {
@@ -462,9 +456,11 @@ void line_tracker(){
   } 
   else if (leftSensor < TRACKER_THRESHOLD && rightSensor > TRACKER_THRESHOLD) {
     directionStt = LEFT;  // Turn left if only right sensor detects the line
+    //directionStt = RIGHT;
   } 
   else if (leftSensor > TRACKER_THRESHOLD && rightSensor < TRACKER_THRESHOLD) {
     directionStt = RIGHT;  // Turn right if only left sensor detects the line
+    //directionStt = LEFT;
   } 
   else if (leftSensor < TRACKER_THRESHOLD && rightSensor < TRACKER_THRESHOLD && directionStt != STOP) {
     directionStt = BWD;  // Move backward if neither sensor detects the line
@@ -534,21 +530,21 @@ void sumo(){
   }
   else{
     if ((leftSensor >= TRACKER_THRESHOLD) || (rightSensor >= TRACKER_THRESHOLD)){
-        move(BWD,255);
-        delay(200);
+      move(BWD,255);
+      delay(200);
     }
     else if ((leftSensor < TRACKER_THRESHOLD) && (rightSensor < TRACKER_THRESHOLD)){
-        counter += 1;
-        if (counter == 3){
-          move(FWD,180);
-          delay(100);
-          counter = 0;
-        }
-        else{
-          move(LEFT,180);
-          delay(100);
-          move(STOP,0);
-        }
+      counter += 1;
+      if (counter == 3){
+        move(FWD,180);
+        delay(100);
+        counter = 0;
+      }
+      else{
+        move(LEFT,180);
+        delay(100);
+        move(STOP,0);
+      }
     }else
       move(STOP,0);
   }
@@ -560,7 +556,6 @@ void setup() {
   delay(1999);
   BLEConfigure();  // Configure the Bluetooth communication
   pinMode(BUZZER_PIN, OUTPUT);
-  strip.begin();  // Initialize the NeoPixel strip
   attachMotor();  // Initialize motor control pins
   pinMode(LDR_L_PIN, INPUT_PULLUP);
   pinMode(LDR_R_PIN, INPUT_PULLUP);
@@ -591,14 +586,9 @@ void setup() {
 
 void loop() {
   switch(BerryMode){
-    case 0: //Choose Mode
-      drawScreen(smile);
-      rgbFunction();
-      bleConnect();
+    case 0: //Bluetooth Settings
       move(STOP,0);
-      break;
-    case 1: //Bluetooth Settings
-      drawScreen(bluetooth);
+      drawScreen(smile);
       rgbFunction();
       bleConnect();  
       Serial1.write("+++");
@@ -607,9 +597,9 @@ void loop() {
       Serial1.write("\r\n");
       BLEReadResponse();
       ble_data = 0;
-      BerryMode = 2;
+      BerryMode++;
       break;
-    case 2: //Bluetooth Mode
+    case 1: //Bluetooth Mode
       if(led_matrix_status == 0){
         drawScreen(bluetooth);
       }
@@ -658,15 +648,17 @@ void loop() {
 
       bleConnect();  // Handle different Bluetooth commands
 
-      if((ble_buf[0] == 82) && (ble_buf[1] == 2) && (ble_buf[2] == 1) && (ble_buf[3] == 0)){ //Neo turn off
+      if ((ble_buf[0] == 82) && (ble_buf[1] == 2) && (ble_buf[2] == 99)){  //Exit modes
+        bluetooth_mode = 0;
+        move(STOP,0);
+      }
+      else if((ble_buf[0] == 82) && (ble_buf[1] == 2) && (ble_buf[2] == 1) && (ble_buf[3] == 0)){ //Neo turn off
         bluetooth_mode = 0;
         rgb_status = 0;
         for(i=0; i<6; i++){
           strip.setPixelColor(i, 0, 0, 0);
-          strip.show();
           delay(50);
         }
-        strip.show();
       }
       else if((ble_buf[0] == 82) && (ble_buf[1] == 2) && (ble_buf[2] == 90) && (ble_buf[3] == 0)){ //Neo turn on
         bluetooth_mode = 0;
@@ -732,16 +724,12 @@ void loop() {
 
         led_matrix_status = 1;
         drawScreen(user_led_matrix);
-        //delay(10);
-      }
-      else if ((ble_buf[0] == 82) && (ble_buf[1] == 2) && (ble_buf[2] == 99)){  //Exit modes
-          bluetooth_mode = 0;
       }
       else{
         delay(10);
       }
       break;
-    case 3: //IR Mode
+    case 2: //IR Mode
       drawScreen(ir);
       rgbFunction();
       bleConnect();
@@ -783,26 +771,27 @@ void loop() {
         }
       }
       break;
-    case 4:  //Sumo Mode
+    case 3:  //Sumo Mode
       drawScreen(triangle);
       rgbFunction();
       bleConnect();
       sumo();
       break;
-    case 5: //Line Tracker Mode
+    case 4: //Line Tracker Mode
       drawScreen(tracker);
       rgbFunction();
       bleConnect();
       line_tracker();
       break;
-    case 6: //Light Tracker Mode
+    case 5: //Light Tracker Mode
       drawScreen(sunny);
       rgbFunction();
       bleConnect();
       light_tracker();
       break;
-    case 7:  //Sonic Mode
+    case 6:  //Sonic Mode
       drawScreen(sonic);
+      delay(100);
       rgbFunction();
       bleConnect();
       sonic_mode();
