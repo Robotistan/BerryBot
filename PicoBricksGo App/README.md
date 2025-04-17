@@ -1,4 +1,3 @@
-![1](https://github.com/user-attachments/assets/e81dc14e-8e0a-43e4-adc4-272f6649c857)
+![yeni](https://github.com/user-attachments/assets/1001f3a9-1963-4740-bc6c-0ae6e8570d37)
 
-![2](https://github.com/user-attachments/assets/3c326f9f-8d6a-4fb0-80b5-220ee8ffc657)
-
+![yeni2](https://github.com/user-attachments/assets/8b77d2f5-811c-427b-a8a2-f8aa85141c2f)
