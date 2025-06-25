@@ -1,3 +1,5 @@
+// You must select the "Generic RP2040" board from the Arduino IDE board manager
+
 // Libraries
 #include <Wire.h>
 #include <picobricks.h>
@@ -454,11 +456,9 @@ void line_tracker(){
   } 
   else if (leftSensor < TRACKER_THRESHOLD && rightSensor > TRACKER_THRESHOLD) {
     directionStt = LEFT;  // Turn left if only right sensor detects the line
-    //directionStt = RIGHT;
   } 
   else if (leftSensor > TRACKER_THRESHOLD && rightSensor < TRACKER_THRESHOLD) {
     directionStt = RIGHT;  // Turn right if only left sensor detects the line
-    //directionStt = LEFT;
   } 
   else if (leftSensor < TRACKER_THRESHOLD && rightSensor < TRACKER_THRESHOLD && directionStt != STOP) {
     directionStt = BWD;  // Move backward if neither sensor detects the line
