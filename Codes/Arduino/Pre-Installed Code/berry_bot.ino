@@ -1,5 +1,3 @@
-// You must select the "Generic RP2040" board from the Arduino IDE board manager
-
 // Libraries
 #include <Wire.h>
 #include <picobricks.h>
@@ -447,6 +445,7 @@ void light_tracker(){
 
 // Function to follow a line using two sensors (left and right)
 void line_tracker(){
+  delay(10);
   leftSensor = analogRead(LEFT_SENSOR);
   rightSensor = analogRead(RIGHT_SENSOR);
 
@@ -671,6 +670,8 @@ void loop() {
         sonic_mode();
       }
       else if (((ble_buf[0] == 82) && (ble_buf[1] == 2) && (ble_buf[2] == 8) && (ble_buf[3] == 0)) || (bluetooth_mode == 2)){ //Line Tracker
+        directionStt = STOP;
+        oldDirection = STOP;
         bluetooth_mode = 2;
         line_tracker();
       }
